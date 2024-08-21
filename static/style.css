@@ -1,0 +1,32 @@
+header{
+    border-bottom:1px solid gray;
+    padding:20px;
+}
+nav{
+    border-right:1px solid gray;
+    width:200px;
+    height:600px;
+    float:left;
+}
+nav ol{
+    list-style: none;
+}
+section.content{
+    float:left;
+    padding:20px;
+}
+h2{
+    font-size:30px;
+}
+table, th, td{
+    border:1px solid gray;
+}
+
+/* form related */
+form label {
+    display: inline-block;
+    width: 100px;
+}
+form div {
+margin-bottom: 10px;
+}

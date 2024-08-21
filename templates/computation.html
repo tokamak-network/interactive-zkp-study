@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <section>
+        <ul class="nav">
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">Computation</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Flatcode</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">R1CS</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link disabled" aria-disabled="true">QAP</a>
+            </li>
+          </ul>
+    </section>
+    
+    <section>
+        <h2>Step1. Define Computation</h2>
+        <p>
+            <button type="button" onclick="save_code()" class="btn btn-primary">Save</button>
+            <button type="button" onclick="ast_table()" class="btn btn-primary">
+                <form action="{{url_for('ast_table')}}" method="post" id="ast-form">
+                    Table
+                </form>
+            </button>
+            <button type="button" onclick="" class="btn btn-primary" disabled>Tree</button>
+            <button type="button" onclick="delete_code()" class="btn btn-primary">
+                <form action="{{url_for('delete_code')}}" method="post" id="delete-form">
+                    Clear
+                </form>
+            </button>
+        </p>
+        <p>
+            <form action="{{url_for('save_code')}}" method="post" id="code-form">
+                <div class="form-floating">
+                    <textarea name="z-code" class="form-control" placeholder="Leave a code here" id="z-code-id" form="code-form" style="height: 100px">{{code}}</textarea>
+                    <label for="floatingTextarea2">code here</label>
+                </div>
+            </form>
+        </p>
+        <p>
+            {% if ast_obj == None %}
+
+            {% else %}
+                <h5>AST table</h5>
+                <table class="table table-bordered">
+                    <!-- <thead>
+                      <tr>
+                        <th scope="col" colspan="2">AST table</th>
+                      </tr>
+                    </thead> -->
+                    <tbody>
+                        <tr>
+                            <th colspan="2">Function Name</th>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>{{ast_obj.name}}</td>
+                        </tr>
+                        <tr>
+                            <th colspan="2">Arguments</th>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>{{ast_obj.inputs}}</td>
+                        </tr>
+                        <tr>
+                            <th colspan="2">Body</th>
+                        </tr>
+                        {% for ast_o in ast_obj.body %}
+                            <tr>
+                                <td>{{loop.index0}}</td>
+                                <td>{{ast_o}}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                  </table>
+            {% endif %}
+        </p>
+    </section>
+
+    <section>
+        <h2>Step2. Flatcode</h2>
+        <p>
+            <button type="button" onclick="flatcode_table()" class="btn btn-primary">
+                <form action="{{url_for('flatcode_table')}}" method="post" id="flatcode-form">
+                    Table
+                </form>
+            </button>
+            <button type="button" onclick="" class="btn btn-primary" disabled>Tree</button>
+            <button type="button" onclick="" class="btn btn-primary" disabled>Clear</button>
+        </p>
+        <p>
+            {% if flatcode == None %}
+
+            {% else %}
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th scope="col">Gates#</th>
+                        <th scope="col">Expression</th>
+                        <th scope="col">Flatcode(Three-address-code)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for expression in flatcode %}
+                    <tr>
+                        <th scope="row">{{loop.index}}</th>
+                        <td>{{expression[1]}} = {{expression[2]}} {{expression[0]}} {{expression[3]}}</td>
+                        <td>{{expression}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>      
+                variables : {{variables}}           
+            {% endif %}
+
+        </p>
+    </section>
+    
+    <section>
+        <h2>Step3. R1CS</h2>
+    </section>
+    
+    <section>
+        <h2>Step4. QAP</h2>
+    </section>
+{% endblock %}
