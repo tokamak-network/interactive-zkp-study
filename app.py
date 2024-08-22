@@ -4,7 +4,7 @@ from flask import request
 
 import ast
 
-from code_to_r1cs import parse, extract_inputs_and_body, flatten_body, initialize_symbol, get_var_placement
+from zkp.groth16.code_to_r1cs import parse, extract_inputs_and_body, flatten_body, initialize_symbol, get_var_placement
 
 app = Flask(__name__)
 app.secret_key = "key"
