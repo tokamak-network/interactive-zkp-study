@@ -146,5 +146,5 @@ def abc_matrix():
             session["abc"] = {"A": A, "B": B, "C": C}
 
             return redirect(url_for('main'))
-    else:
-        return redirect(url_for('main'))
+        else:
+            return redirect(url_for('main'))
