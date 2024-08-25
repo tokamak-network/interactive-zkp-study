@@ -28,3 +28,8 @@ async function flatcode_table(){
     document.getElementById('flatcode-form').submit();
     console.log("flatcode table created");
 }
+
+async function abc_matrix(){
+    document.getElementById('abc-matrix-form').submit();
+    console.log("abc matrix created");
+}

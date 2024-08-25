@@ -124,6 +124,39 @@
     
     <section>
         <h2>Step3. R1CS</h2>
+        <p> 
+            <button type="button" onclick="abc_matrix()" class="btn btn-primary">
+                <form action="{{url_for('abc_matrix')}}" method="post" id="abc-matrix-form">
+                    ABC Matrix
+                </form>
+            </button>
+            <button type="button" onclick="" class="btn btn-primary" disabled>Draw</button>
+            <button type="button" onclick="" class="btn btn-primary" disabled>Input</button>
+            <button type="button" onclick="" class="btn btn-primary" disabled>clear</button>
+        </p>
+        {% if abc == None %}
+
+        {% else %}
+        <p>
+            # A <br>
+            {% for row in abc["A"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # B <br>
+            {% for row in abc["B"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # C <br>
+            {% for row in abc["C"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p> 
+        {% endif %}
+
     </section>
     
     <section>

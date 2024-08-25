@@ -4,7 +4,14 @@ from flask import request
 
 import ast
 
-from zkp.groth16.code_to_r1cs import parse, extract_inputs_and_body, flatten_body, initialize_symbol, get_var_placement
+from zkp.groth16.code_to_r1cs import (
+    parse, 
+    extract_inputs_and_body, 
+    flatten_body, 
+    initialize_symbol, 
+    get_var_placement, 
+    flatcode_to_r1cs
+)
 
 app = Flask(__name__)
 app.secret_key = "key"
@@ -55,11 +62,12 @@ def main():
     ast_obj = session.get('ast_obj')
     flatcode = session.get('flatcode')
     variables = session.get('variables')
+    abc = session.get('abc')
     
     if user_code == None:
         user_code = DEFAULT_CODE
     
-    return render_template('computation.html', code=user_code, ast_obj=ast_obj, flatcode=flatcode, variables=variables)
+    return render_template('computation.html', code=user_code, ast_obj=ast_obj, flatcode=flatcode, variables=variables, abc=abc)
     
 @app.route("/code", methods=['POST'])
 def save_code():
@@ -111,7 +119,6 @@ def clear_flatcode():
         
 @app.route("/flatcode/table", methods=["POST"])
 def flatcode_table():
-    print("flatcode function in")
     if request.method == "POST":
         user_code = session.get("code")
         if user_code:
@@ -127,3 +134,17 @@ def flatcode_table():
             return redirect(url_for('main'))
         else:
             return redirect(url_for('main'))
+        
+@app.route("/r1cs/abc", methods=["POST"])
+def abc_matrix():
+    if request.method == "POST":
+        user_code = session.get("code")
+        if user_code:
+            inputs, body = extract_inputs_and_body(parse(user_code))
+            flatcode = flatten_body(body)
+            A, B, C = flatcode_to_r1cs(inputs, flatcode)
+            session["abc"] = {"A": A, "B": B, "C": C}
+
+            return redirect(url_for('main'))
+    else:
+        return redirect(url_for('main'))
