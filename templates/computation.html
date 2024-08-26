@@ -130,13 +130,40 @@
                     ABC Matrix
                 </form>
             </button>
+            <button type="button" onclick="put_values()" class="btn btn-primary">
+                <form action="{{url_for('retrieve_values')}}" method="post" id="put-values-form">
+                    Put values
+                </form>
+            </button>
             <button type="button" onclick="" class="btn btn-primary" disabled>Draw</button>
-            <button type="button" onclick="" class="btn btn-primary" disabled>Input</button>
             <button type="button" onclick="" class="btn btn-primary" disabled>clear</button>
         </p>
+        <p>
+            {% if inputs == None %}
+            {% else %}
+                <form action="{{url_for('calculate_r')}}" method="post" id="calculate-r-form">
+                    <div class="row">
+                {% for input in inputs %}
+                        <div class="col">
+                         <input type="text" class="form-control-{{loop.index}}" name="{{input}}" placeholder="{{input}}">
+                        </div>
+                {% endfor %}
+                    </div>
+                </form>
+                <button type="button" onclick="calculate_r_values()" class="btn btn-primary">
+                    Calculate r
+                </button>
+                {% if r_vector == None %}
+                {% else %}
+                    <p>inputs : {{user_inputs}}</p>
+                    <p>r = {{r_vector}}</p>
+                {% endif %}
+                <!-- todo  display r values`-->
+            {% endif %}
+        </p>
         {% if abc == None %}
-
         {% else %}
+        <!-- <p>A.r + B.r - C.r = 0</p> -->
         <p>
             # A <br>
             {% for row in abc["A"] %}

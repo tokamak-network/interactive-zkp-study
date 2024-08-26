@@ -10,7 +10,8 @@ from zkp.groth16.code_to_r1cs import (
     flatten_body, 
     initialize_symbol, 
     get_var_placement, 
-    flatcode_to_r1cs
+    flatcode_to_r1cs,
+    assign_variables
 )
 
 app = Flask(__name__)
@@ -63,11 +64,23 @@ def main():
     flatcode = session.get('flatcode')
     variables = session.get('variables')
     abc = session.get('abc')
+    inputs = session.get('inputs')
+    user_inputs = session.get('user_inputs')
+    r_vector = session.get('r_values')
     
     if user_code == None:
         user_code = DEFAULT_CODE
     
-    return render_template('computation.html', code=user_code, ast_obj=ast_obj, flatcode=flatcode, variables=variables, abc=abc)
+    return render_template('computation.html', \
+                           code=user_code, \
+                           ast_obj=ast_obj, \
+                           flatcode=flatcode, \
+                           variables=variables, \
+                           abc=abc, \
+                           inputs=inputs, \
+                           user_inputs=user_inputs, \
+                           r_vector=r_vector \
+                           )
     
 @app.route("/code", methods=['POST'])
 def save_code():
@@ -144,6 +157,49 @@ def abc_matrix():
             flatcode = flatten_body(body)
             A, B, C = flatcode_to_r1cs(inputs, flatcode)
             session["abc"] = {"A": A, "B": B, "C": C}
+
+            return redirect(url_for('main'))
+        else:
+            return redirect(url_for('main'))
+        
+# @app.route("/r1cs/inputs", methods=["POST"])
+# def retrieve_values():
+#     if request.method == "POST":
+#         user_code = session.get("code")
+#         if user_code: 
+#             return redirect(url_for('main'))
+#         else:
+#             return redirect(url_for('main'))
+        
+@app.route("/r1cs/inputs", methods=["POST"])
+def retrieve_values():
+    if request.method == "POST":
+        user_code = session.get("code")
+        if user_code:
+            inputs, body = extract_inputs_and_body(parse(user_code))
+            session['inputs'] = inputs
+            return redirect(url_for('main'))
+        else:
+            return redirect(url_for('main'))
+        
+@app.route("/r1cs/inputs/r", methods=["POST"])
+def calculate_r():
+    if request.method == "POST":
+        user_code = session.get("code")
+        if user_code:
+            form_data = request.form
+            user_inputs = []
+            for d in form_data:
+                user_inputs.append(int(form_data[d]))
+            print(user_inputs)
+            session['user_inputs'] = form_data
+            
+            # todo : calculate r vector
+            inputs, body = extract_inputs_and_body(parse(user_code))
+            flatcode = flatten_body(body)
+
+            r = assign_variables(inputs, user_inputs, flatcode)
+            session['r_values'] = r
 
             return redirect(url_for('main'))
         else:

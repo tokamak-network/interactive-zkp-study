@@ -33,3 +33,13 @@ async function abc_matrix(){
     document.getElementById('abc-matrix-form').submit();
     console.log("abc matrix created");
 }
+
+async function put_values(){
+    document.getElementById('put-values-form').submit();
+    console.log("retrieve inputs");
+}
+
+async function calculate_r_values(){
+    document.getElementById('calculate-r-form').submit();
+    console.log("retrieve inputs");
+}
