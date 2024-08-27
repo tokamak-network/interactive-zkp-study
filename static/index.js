@@ -41,10 +41,15 @@ async function put_values(){
 
 async function calculate_r_values(){
     document.getElementById('calculate-r-form').submit();
-    console.log("retrieve inputs");
+    console.log("calculate r");
 }
 
 async function create_qap(){
     document.getElementById('create-qap-form').submit();
     console.log("create qap");
+}
+
+async function create_qap_lcm(){
+    document.getElementById('create-qap-lcm-form').submit();
+    console.log("create qap lcm");
 }

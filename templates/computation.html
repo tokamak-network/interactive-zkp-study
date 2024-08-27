@@ -193,11 +193,16 @@
                     QAP
                 </form>
             </button>
-            <button type="button" onclick="" class="btn btn-primary" disabled>QAP(LCM)</button>
+            <button type="button" onclick="create_qap_lcm()" class="btn btn-primary">
+                <form action="{{url_for('create_qap_lcm')}}" method="post" id="create-qap-lcm-form">
+                    QAP(LCM)
+                </form>
+            </button>
             <button type="button" onclick="" class="btn btn-primary" disabled>Verify</button>
         </p>
         {% if qap == None %}
         {% else %}
+        <h5>QAP</h5>
         <p>
             # Ap<br>
             {% for row in qap["Ap"] %}
@@ -219,6 +224,33 @@
         <p>
             # Z <br>
             {{qap["Z"]}} <br>
+        </p>
+        {% endif %}
+
+        {% if qap_lcm == None %}
+        {% else %}
+        <h5>QAP(LCM)</h5>
+        <p>
+            # Ap<br>
+            {% for row in qap_lcm["Ap"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # Bp <br>
+            {% for row in qap_lcm["Bp"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # Cp <br>
+            {% for row in qap_lcm["Cp"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # Z <br>
+            {{qap_lcm["Z"]}} <br>
         </p>
         {% endif %}
     </section>

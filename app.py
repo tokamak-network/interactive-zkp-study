@@ -19,6 +19,10 @@ from zkp.groth16.qap_creator import (
     create_solution_polynomials
 )
 
+from zkp.groth16.qap_creator_lcm import (
+    r1cs_to_qap_times_lcm
+)
+
 app = Flask(__name__)
 app.secret_key = "key"
 
@@ -74,6 +78,7 @@ def main():
     r_vector = session.get('r_values')
 
     qap = session.get('qap')
+    qap_lcm = session.get('qap_lcm')
     
     if user_code == None:
         user_code = DEFAULT_CODE
@@ -87,7 +92,8 @@ def main():
                            inputs=inputs, \
                            user_inputs=user_inputs, \
                            r_vector=r_vector, \
-                           qap=qap \
+                           qap=qap, \
+                           qap_lcm=qap_lcm \
                            )
     
 @app.route("/code", methods=['POST'])
@@ -224,6 +230,23 @@ def create_qap():
             Ap, Bp, Cp, Z = r1cs_to_qap(A, B, C)
 
             session["qap"] = {"Ap" : Ap, "Bp":Bp, "Cp": Cp, "Z":Z}
+
+            return redirect(url_for('main'))
+        else:
+            return redirect(url_for('main'))
+
+@app.route("/qap/lcm", methods=["POST"])
+def create_qap_lcm():
+    if request.method == "POST":
+        user_code = session.get("code")
+        if user_code: 
+            inputs, body = extract_inputs_and_body(parse(user_code))
+            flatcode = flatten_body(body)
+            A, B, C = flatcode_to_r1cs(inputs, flatcode)
+
+            Ap, Bp, Cp, Z = r1cs_to_qap_times_lcm(A, B, C)
+
+            session["qap_lcm"] = {"Ap" : Ap, "Bp":Bp, "Cp": Cp, "Z":Z}
 
             return redirect(url_for('main'))
         else:

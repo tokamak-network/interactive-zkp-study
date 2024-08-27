@@ -1,7 +1,7 @@
 # Polynomials are stored as arrays, where the ith element in
 # the array is the ith degree coefficient
 
-from determinant import determinant_fast
+from zkp.groth16.determinant import determinant_fast
 
 det4 = 12.0
 # how it is calculated?
@@ -112,9 +112,11 @@ def k_matrix(k):
 # A[i]*d * B[i]*d - C[i]*d^2 = 0
 def r1cs_to_qap_times_lcm(A, B, C):
     # A, B, C 매트릭스의 각 row를 라그랑주 보간법 수행
+
+    # Calculate k*k matrix and its determinant
     k = len(A)
-    k_mat = k_matrix(k)
-    det_k = determinant_fast(k_mat)
+    kk_matrix = k_matrix(k)
+    det_k = determinant_fast(kk_matrix)
 
     det_multi = lambda a : a * det_k        # *d
     det_s_multi = lambda a : a * (det_k**2) # *d^2
