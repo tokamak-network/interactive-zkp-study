@@ -158,12 +158,10 @@
                     <p>inputs : {{user_inputs}}</p>
                     <p>r = {{r_vector}}</p>
                 {% endif %}
-                <!-- todo  display r values`-->
             {% endif %}
         </p>
         {% if abc == None %}
         {% else %}
-        <!-- <p>A.r + B.r - C.r = 0</p> -->
         <p>
             # A <br>
             {% for row in abc["A"] %}
@@ -181,12 +179,47 @@
             {% for row in abc["C"] %}
             {{row}} <br>
             {% endfor %}
-        </p> 
+        </p>
+        <p><h5>A.r + B.r - C.r = 0</h5  ></p> 
         {% endif %}
 
     </section>
     
     <section>
         <h2>Step4. QAP</h2>
+        <p>
+            <button type="button" onclick="create_qap()" class="btn btn-primary">
+                <form action="{{url_for('create_qap')}}" method="post" id="create-qap-form">
+                    QAP
+                </form>
+            </button>
+            <button type="button" onclick="" class="btn btn-primary" disabled>QAP(LCM)</button>
+            <button type="button" onclick="" class="btn btn-primary" disabled>Verify</button>
+        </p>
+        {% if qap == None %}
+        {% else %}
+        <p>
+            # Ap<br>
+            {% for row in qap["Ap"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # Bp <br>
+            {% for row in qap["Bp"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # Cp <br>
+            {% for row in qap["Cp"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # Z <br>
+            {{qap["Z"]}} <br>
+        </p>
+        {% endif %}
     </section>
 {% endblock %}

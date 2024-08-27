@@ -43,3 +43,8 @@ async function calculate_r_values(){
     document.getElementById('calculate-r-form').submit();
     console.log("retrieve inputs");
 }
+
+async function create_qap(){
+    document.getElementById('create-qap-form').submit();
+    console.log("create qap");
+}

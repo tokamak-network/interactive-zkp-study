@@ -14,6 +14,11 @@ from zkp.groth16.code_to_r1cs import (
     assign_variables
 )
 
+from zkp.groth16.qap_creator import (
+    r1cs_to_qap,
+    create_solution_polynomials
+)
+
 app = Flask(__name__)
 app.secret_key = "key"
 
@@ -67,6 +72,8 @@ def main():
     inputs = session.get('inputs')
     user_inputs = session.get('user_inputs')
     r_vector = session.get('r_values')
+
+    qap = session.get('qap')
     
     if user_code == None:
         user_code = DEFAULT_CODE
@@ -79,7 +86,8 @@ def main():
                            abc=abc, \
                            inputs=inputs, \
                            user_inputs=user_inputs, \
-                           r_vector=r_vector \
+                           r_vector=r_vector, \
+                           qap=qap \
                            )
     
 @app.route("/code", methods=['POST'])
@@ -124,7 +132,6 @@ def ast_table():
             return redirect(url_for('main'))
         else:
             return redirect(url_for('main'))
-        
 
 def clear_flatcode():
     session['flatcode'] = None
@@ -200,6 +207,23 @@ def calculate_r():
 
             r = assign_variables(inputs, user_inputs, flatcode)
             session['r_values'] = r
+
+            return redirect(url_for('main'))
+        else:
+            return redirect(url_for('main'))
+
+@app.route("/qap/normal", methods=["POST"])
+def create_qap():
+    if request.method == "POST":
+        user_code = session.get("code")
+        if user_code: 
+            inputs, body = extract_inputs_and_body(parse(user_code))
+            flatcode = flatten_body(body)
+            A, B, C = flatcode_to_r1cs(inputs, flatcode)
+
+            Ap, Bp, Cp, Z = r1cs_to_qap(A, B, C)
+
+            session["qap"] = {"Ap" : Ap, "Bp":Bp, "Cp": Cp, "Z":Z}
 
             return redirect(url_for('main'))
         else:
