@@ -71,6 +71,12 @@ def getNumWires(Ax):
 def getNumGates(Ax):
     return len(Ax[0])
 
+def getFRPoly1D(poly):
+    return [ FR(int(num)) for num in poly ]
+
+def getFRPoly2D(poly):
+    return [ [FR(int(num)) for num in vec] for vec in poly ]
+
 def ax_val(Ax, x_val):
     Ax_val = []
     for i in range(len(Ax)):
@@ -191,11 +197,17 @@ def test():
     Z = [3456.0, -7200.0, 5040.0, -1440.0, 144.0]
     R = [1, 3, 35, 9, 27, 30]
 
-    Ax = [ [FR(int(num)) for num in vec] for vec in Ap ]
-    Bx = [ [FR(int(num)) for num in vec] for vec in Bp ]
-    Cx = [ [FR(int(num)) for num in vec] for vec in Cp ]
-    Zx = [ FR(int(num)) for num in Z ]
-    Rx = [ FR(int(num)) for num in R ]
+    # Ax = [ [FR(int(num)) for num in vec] for vec in Ap ]
+    # Bx = [ [FR(int(num)) for num in vec] for vec in Bp ]
+    # Cx = [ [FR(int(num)) for num in vec] for vec in Cp ]
+    # Zx = [ FR(int(num)) for num in Z ]
+    # Rx = [ FR(int(num)) for num in R ]
+
+    Ax = getFRPoly2D(Ap)
+    Bx = getFRPoly2D(Bp)
+    Cx = getFRPoly2D(Cp)
+    Zx = getFRPoly1D(Z)
+    Rx = getFRPoly1D(R)
 
     Hx, r = hxr(Ax, Bx, Cx, Zx, R)
 
