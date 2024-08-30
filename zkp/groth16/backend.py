@@ -82,42 +82,42 @@ def to_matrix_mod(matrix, q):
 
 #TARGET POLYNOMIAL
 
-# Ap = [
-#     [-60.0, 110.0, -60.0, 10.0],
-#     [96.0, -136.0, 60.0, -8.0],
-#     [0.0, 0.0, 0.0, 0.0],
-#     [-72.0, 114.0, -48.0, 6.0],
-#     [48.0, -84.0, 42.0, -6.0],
-#     [-12.0, 22.0, -12.0, 2.0]
-# ]
+Ap = [
+    [-60.0, 110.0, -60.0, 10.0],
+    [96.0, -136.0, 60.0, -8.0],
+    [0.0, 0.0, 0.0, 0.0],
+    [-72.0, 114.0, -48.0, 6.0],
+    [48.0, -84.0, 42.0, -6.0],
+    [-12.0, 22.0, -12.0, 2.0]
+]
 
-# Bp = [
-#     [36.0, -62.0, 30.0, -4.0],
-#     [-24.0, 62.0, -30.0, 4.0],
-#     [0.0, 0.0, 0.0, 0.0],
-#     [0.0, 0.0, 0.0, 0.0],
-#     [0.0, 0.0, 0.0, 0.0],
-#     [0.0, 0.0, 0.0, 0.0]
-# ]
+Bp = [
+    [36.0, -62.0, 30.0, -4.0],
+    [-24.0, 62.0, -30.0, 4.0],
+    [0.0, 0.0, 0.0, 0.0],
+    [0.0, 0.0, 0.0, 0.0],
+    [0.0, 0.0, 0.0, 0.0],
+    [0.0, 0.0, 0.0, 0.0]
+]
 
-# Cp = [
-#     [0.0, 0.0, 0.0, 0.0],
-#     [0.0, 0.0, 0.0, 0.0],
-#     [-144.0, 264.0, -144.0, 24.0],
-#     [576.0, -624.0, 216.0, -24.0],
-#     [-864.0, 1368.0, -576.0, 72.0],
-#     [576.0, -1008.0, 504.0, -72.0]
-# ]
+Cp = [
+    [0.0, 0.0, 0.0, 0.0],
+    [0.0, 0.0, 0.0, 0.0],
+    [-144.0, 264.0, -144.0, 24.0],
+    [576.0, -624.0, 216.0, -24.0],
+    [-864.0, 1368.0, -576.0, 72.0],
+    [576.0, -1008.0, 504.0, -72.0]
+]
 
-# Z = [3456.0, -7200.0, 5040.0, -1440.0, 144.0]
-# R = [1, 3, 35, 9, 27, 30]
+Z = [3456.0, -7200.0, 5040.0, -1440.0, 144.0]
+R = [1, 3, 35, 9, 27, 30]
 
 
-# Ax = [ [FR(int(num)) for num in vec] for vec in Ap ]
-# Bx = [ [FR(int(num)) for num in vec] for vec in Bp ]
-# Cx = [ [FR(int(num)) for num in vec] for vec in Cp ]
-# Zx = [ FR(int(num)) for num in Z ]
-# Rx = [ FR(int(num)) for num in R ]
+Ax = [ [FR(int(num)) for num in vec] for vec in Ap ]
+Bx = [ [FR(int(num)) for num in vec] for vec in Bp ]
+Cx = [ [FR(int(num)) for num in vec] for vec in Cp ]
+Zx = [ FR(int(num)) for num in Z ]
+Rx = [ FR(int(num)) for num in R ]
 
 # Rax = [multiply_polys(Rx, vec)for vec in Ax]
 # Rbx = [multiply_polys(Rx, vec)for vec in Bx]
@@ -260,8 +260,8 @@ rhs = Zx_val * Hx_val
 # lhs = Z((Rx*Ax_val)*(Rx*Bx_val)-(Rx*Cx_val))
 # rhs = Zx_val*Hx_val
 
-# print("polynomial verification")
-# print(lhs == rhs)
+print("polynomial verification")
+print(lhs == rhs)
 
 
 ### 2. PROVING ###
@@ -314,8 +314,8 @@ for i in range(numGates-1):
 
 proof = [proof_A, proof_B, proof_C]
 
-# print("proofs : ", proof)
-# print("")
+print("proofs : ", proof)
+print("")
 
 ### 2.1 PROOF COMPLETENESS CHECK ###
 
@@ -364,14 +364,14 @@ valpub = [VAL[0], VAL[-1]]
 rhs = rhs + gamma*multiply_vec_vec(rpub,valpub) #12058091336480024
 rhs = rhs + C*delta #21888242871839275222246405745257275088548364400414254943408259015785828911597
 
-# print("#PROOF COMPLETENESS CHECK#")
-# print("rhs : {}".format(rhs))
-# print("lhs : {}".format(lhs))
-# print("rhs == lhs ? : {}".format(rhs == lhs))
-# print("proof A check : {}".format(proof_A == mult(g1, int(A))))
-# print("proof B check : {}".format(proof_B == mult(g2, int(B))))
-# print("proof C check : {}".format(proof_C == mult(g1, int(C))))
-# print("")
+print("#PROOF COMPLETENESS CHECK#")
+print("rhs : {}".format(rhs))
+print("lhs : {}".format(lhs))
+print("rhs == lhs ? : {}".format(rhs == lhs))
+print("proof A check : {}".format(proof_A == mult(g1, int(A))))
+print("proof B check : {}".format(proof_B == mult(g2, int(B))))
+print("proof C check : {}".format(proof_C == mult(g1, int(C))))
+print("")
 
 # A = alpha + Rx*Ax_val + r*delta
 # B = beta + Rx*Bx_val + s*delta
@@ -403,8 +403,8 @@ for i in [0, numWires-1]:
 
 RHS = (RHS * pairing(sigma2_1[1], temp)) * pairing(sigma2_1[2], proof_C)
 
-# print("LHS", LHS)
-# print("")
-# print("RHS", RHS)
-# print("")
-# print("Verification result (RHS == LHS)? : {}".format(RHS == LHS))
+print("LHS", LHS)
+print("")
+print("RHS", RHS)
+print("")
+print("Verification result (RHS == LHS)? : {}".format(RHS == LHS))

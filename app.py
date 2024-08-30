@@ -290,3 +290,8 @@ def create_qap_fr():
             return redirect(url_for('main'))
         else:
             return redirect(url_for('main'))
+        
+
+@app.route("/groth/setup")
+def main_setup():
+    return render_template("groth16/setup.html")
