@@ -168,7 +168,6 @@ def test():
         return [scalar*num for num in vec]
     
     ### PROOF COMPLETENESS CHECK ###
-    VAL = [FR(0)]*numWires
 
     A = alpha + _multiply_vec_vec(Rx, Ax_val) + r*delta
     B = beta + _multiply_vec_vec(Rx, Bx_val) + s*delta
@@ -187,15 +186,12 @@ def test():
 
     C = C0 * (C1111213 + C2) + C3
 
-    lhs = A*B #21888242871839275222246405745257275088548364400416033032405666501928354297837
+    lhs = A*B 
 
-    rhs = alpha*beta #14149304
-
-    rpub = [Rx[0], Rx[-1]] #[1, 30]
+    rpub = [Rx[0], Rx[-1]]
     valpub = [VAL[0], VAL[-1]]
-
-    rhs = rhs + gamma*_multiply_vec_vec(rpub,valpub) #12058091336480024
-    rhs = rhs + C*delta #21888242871839275222246405745257275088548364400414254943408259015785828911597
+    
+    rhs = alpha*beta + gamma*_multiply_vec_vec(rpub,valpub) + C*delta
 
     print("#PROOF COMPLETENESS CHECK#")
     print("rhs : {}".format(rhs))
@@ -204,4 +200,3 @@ def test():
     print("proof A check : {}".format(proof_A == mult(g1, int(A))))
     print("proof B check : {}".format(proof_B == mult(g2, int(B))))
     print("proof C check : {}".format(proof_C == mult(g1, int(C))))
-    print("")
