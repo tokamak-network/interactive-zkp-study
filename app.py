@@ -2,6 +2,9 @@ from flask import Flask, session, redirect, url_for
 from flask import render_template
 from flask import request
 
+from py_ecc.fields import bn128_FQ as FQ
+from py_ecc import bn128
+
 import ast
 
 from zkp.groth16.code_to_r1cs import (
@@ -22,6 +25,9 @@ from zkp.groth16.qap_creator import (
 from zkp.groth16.qap_creator_lcm import (
     r1cs_to_qap_times_lcm
 )
+
+class FR(FQ):
+    field_modulus = bn128.curve_order
 
 app = Flask(__name__)
 app.secret_key = "key"
@@ -80,10 +86,13 @@ def main():
     qap = session.get('qap')
     qap_lcm = session.get('qap_lcm')
     
+    qap_fr = session.get('qap_fr')
+    fr_modulus = session.get('fr_modulus')
+    
     if user_code == None:
         user_code = DEFAULT_CODE
     
-    return render_template('computation.html', \
+    return render_template('groth16/computation.html', \
                            code=user_code, \
                            ast_obj=ast_obj, \
                            flatcode=flatcode, \
@@ -93,7 +102,9 @@ def main():
                            user_inputs=user_inputs, \
                            r_vector=r_vector, \
                            qap=qap, \
-                           qap_lcm=qap_lcm \
+                           qap_lcm=qap_lcm, \
+                           qap_fr=qap_fr, \
+                           fr_modulus=fr_modulus \
                            )
     
 @app.route("/code", methods=['POST'])
@@ -247,6 +258,34 @@ def create_qap_lcm():
             Ap, Bp, Cp, Z = r1cs_to_qap_times_lcm(A, B, C)
 
             session["qap_lcm"] = {"Ap" : Ap, "Bp":Bp, "Cp": Cp, "Z":Z}
+
+            return redirect(url_for('main'))
+        else:
+            return redirect(url_for('main'))
+        
+
+@app.route("/qap/fr", methods=["POST"])
+def create_qap_fr():
+    if request.method == "POST":
+        user_code = session.get("code")
+        r_values = session.get('r_values')
+        if user_code:
+            inputs, body = extract_inputs_and_body(parse(user_code))
+            flatcode = flatten_body(body)
+            A, B, C = flatcode_to_r1cs(inputs, flatcode)
+            Ap, Bp, Cp, Z = r1cs_to_qap_times_lcm(A, B, C)
+
+            #FR object must be converted to int
+            Ax = [ [int(FR(int(n))) for n in vec] for vec in Ap ]
+            Bx = [ [int(FR(int(n))) for n in vec] for vec in Bp ]
+            Cx = [ [int(FR(int(n))) for n in vec] for vec in Cp ]
+            Zx = [ int(FR(int(num))) for num in Z ]
+            Rx = [ int(FR(int(num))) for num in r_values ]
+
+            o = {"Ax" : Ax, "Bx": Bx, "Cx": Cx, "Zx": Zx, "Rx": Rx}
+            session["qap_fr"] = o
+            fr_modulus = int(FR.field_modulus)
+            session["fr_modulus"]= fr_modulus
 
             return redirect(url_for('main'))
         else:

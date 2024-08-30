@@ -53,3 +53,8 @@ async function create_qap_lcm(){
     document.getElementById('create-qap-lcm-form').submit();
     console.log("create qap lcm");
 }
+
+async function create_qap_fr(){
+    document.getElementById('create-qap-fr-form').submit();
+    console.log("create qap fr");
+}

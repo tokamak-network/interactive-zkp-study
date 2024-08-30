@@ -182,6 +182,11 @@
                     QAP(LCM)
                 </form>
             </button>
+            <button type="button" onclick="create_qap_fr()" class="btn btn-primary">
+                <form action="{{url_for('create_qap_fr')}}" method="post" id="create-qap-fr-form">
+                    QAP(FR)
+                </form>
+            </button>
             <button type="button" onclick="" class="btn btn-primary" disabled>Verify</button>
         </p>
         {% if qap == None %}
@@ -237,5 +242,38 @@
             {{qap_lcm["Z"]}} <br>
         </p>
         {% endif %}
+
+        {% if qap_fr == None %}
+        {% else %}
+        <h5>QAP(FR)</h5>
+        <p>FR uses bn128 curve order as field modulus</p>
+        <p>FR modulus = {{fr_modulus}}</p>
+        <p>
+            # Ap<br>
+            {% for row in qap_fr["Ax"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # Bp <br>
+            {% for row in qap_fr["Bx"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # Cp <br>
+            {% for row in qap_fr["Cx"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # Z <br>
+            {{qap_fr["Zx"]}} <br>
+        </p>
+        <p>
+            # R <br>
+            {{qap_fr["Rx"]}} <br>
+        </p>
+        {% endif %}        
     </section>
 {% endblock %}
