@@ -70,7 +70,6 @@ def proof_b(numWires, numGates, sigma2_1, sigma2_2, Bx, Rx, s):
     return proof_B
 
 def proof_c(numWires, numGates, sigma1_1, sigma1_2, sigma1_4, sigma1_5, Bx, Rx, Hx, s, r, prf_A):
-    print("proof A : {}".format(prf_A))
     #Build temp_proof_B
     temp_proof_B = sigma1_1[1]
     for i in range(numWires):
@@ -190,7 +189,7 @@ def test():
 
     rpub = [Rx[0], Rx[-1]]
     valpub = [VAL[0], VAL[-1]]
-    
+
     rhs = alpha*beta + gamma*_multiply_vec_vec(rpub,valpub) + C*delta
 
     print("#PROOF COMPLETENESS CHECK#")
