@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<section>
+    <ul class="nav">
+        <li class="nav-item">
+          <a class="nav-link" href="{{url_for('main')}}">Computation</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{url_for('proving_main')}}">Proving</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link disabled" href="#">Verifying</a>
+        </li>
+      </ul>
+</section>
+
+{% block content_in %}{% endblock %}
+
+{% endblock %}

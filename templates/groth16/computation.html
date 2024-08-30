@@ -1,0 +1,241 @@
+{% extends 'groth16/base-groth16.html' %}
+
+{% block content_in %}
+
+    <section>
+        <h2>Step1. Define Computation</h2>
+        <p>
+            <button type="button" onclick="save_code()" class="btn btn-primary">Save</button>
+            <button type="button" onclick="ast_table()" class="btn btn-primary">
+                <form action="{{url_for('ast_table')}}" method="post" id="ast-form">
+                    Table
+                </form>
+            </button>
+            <button type="button" onclick="" class="btn btn-primary" disabled>Tree</button>
+            <button type="button" onclick="delete_code()" class="btn btn-primary">
+                <form action="{{url_for('delete_code')}}" method="post" id="delete-form">
+                    Clear
+                </form>
+            </button>
+        </p>
+        <p>
+            <form action="{{url_for('save_code')}}" method="post" id="code-form">
+                <div class="form-floating">
+                    <textarea name="z-code" class="form-control" placeholder="Leave a code here" id="z-code-id" form="code-form" style="height: 100px">{{code}}</textarea>
+                    <label for="floatingTextarea2">code here</label>
+                </div>
+            </form>
+        </p>
+        <p>
+            {% if ast_obj == None %}
+
+            {% else %}
+                <h5>AST table</h5>
+                <table class="table table-bordered">
+                    <!-- <thead>
+                      <tr>
+                        <th scope="col" colspan="2">AST table</th>
+                      </tr>
+                    </thead> -->
+                    <tbody>
+                        <tr>
+                            <th colspan="2">Function Name</th>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>{{ast_obj.name}}</td>
+                        </tr>
+                        <tr>
+                            <th colspan="2">Arguments</th>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>{{ast_obj.inputs}}</td>
+                        </tr>
+                        <tr>
+                            <th colspan="2">Body</th>
+                        </tr>
+                        {% for ast_o in ast_obj.body %}
+                            <tr>
+                                <td>{{loop.index0}}</td>
+                                <td>{{ast_o}}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                  </table>
+            {% endif %}
+        </p>
+    </section>
+
+    <section>
+        <h2>Step2. Flatcode</h2>
+        <p>
+            <button type="button" onclick="flatcode_table()" class="btn btn-primary">
+                <form action="{{url_for('flatcode_table')}}" method="post" id="flatcode-form">
+                    Table
+                </form>
+            </button>
+            <button type="button" onclick="" class="btn btn-primary" disabled>Tree</button>
+            <button type="button" onclick="" class="btn btn-primary" disabled>Clear</button>
+        </p>
+        <p>
+            {% if flatcode == None %}
+
+            {% else %}
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th scope="col">Gates#</th>
+                        <th scope="col">Expression</th>
+                        <th scope="col">Flatcode(Three-address-code)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for expression in flatcode %}
+                    <tr>
+                        <th scope="row">{{loop.index}}</th>
+                        <td>{{expression[1]}} = {{expression[2]}} {{expression[0]}} {{expression[3]}}</td>
+                        <td>{{expression}}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>      
+                variables : {{variables}}           
+            {% endif %}
+
+        </p>
+    </section>
+    
+    <section>
+        <h2>Step3. R1CS</h2>
+        <p> 
+            <button type="button" onclick="abc_matrix()" class="btn btn-primary">
+                <form action="{{url_for('abc_matrix')}}" method="post" id="abc-matrix-form">
+                    ABC Matrix
+                </form>
+            </button>
+            <button type="button" onclick="put_values()" class="btn btn-primary">
+                <form action="{{url_for('retrieve_values')}}" method="post" id="put-values-form">
+                    Put values
+                </form>
+            </button>
+            <button type="button" onclick="" class="btn btn-primary" disabled>Draw</button>
+            <button type="button" onclick="" class="btn btn-primary" disabled>clear</button>
+        </p>
+        <p>
+            {% if inputs == None %}
+            {% else %}
+                <form action="{{url_for('calculate_r')}}" method="post" id="calculate-r-form">
+                    <div class="row">
+                {% for input in inputs %}
+                        <div class="col">
+                         <input type="text" class="form-control-{{loop.index}}" name="{{input}}" placeholder="{{input}}">
+                        </div>
+                {% endfor %}
+                    </div>
+                </form>
+                <button type="button" onclick="calculate_r_values()" class="btn btn-primary">
+                    Calculate r
+                </button>
+                {% if r_vector == None %}
+                {% else %}
+                    <p>inputs : {{user_inputs}}</p>
+                    <p>r = {{r_vector}}</p>
+                {% endif %}
+            {% endif %}
+        </p>
+        {% if abc == None %}
+        {% else %}
+        <p>
+            # A <br>
+            {% for row in abc["A"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # B <br>
+            {% for row in abc["B"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # C <br>
+            {% for row in abc["C"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p><h5>A.r + B.r - C.r = 0</h5  ></p> 
+        {% endif %}
+
+    </section>
+    
+    <section>
+        <h2>Step4. QAP</h2>
+        <p>
+            <button type="button" onclick="create_qap()" class="btn btn-primary">
+                <form action="{{url_for('create_qap')}}" method="post" id="create-qap-form">
+                    QAP
+                </form>
+            </button>
+            <button type="button" onclick="create_qap_lcm()" class="btn btn-primary">
+                <form action="{{url_for('create_qap_lcm')}}" method="post" id="create-qap-lcm-form">
+                    QAP(LCM)
+                </form>
+            </button>
+            <button type="button" onclick="" class="btn btn-primary" disabled>Verify</button>
+        </p>
+        {% if qap == None %}
+        {% else %}
+        <h5>QAP</h5>
+        <p>
+            # Ap<br>
+            {% for row in qap["Ap"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # Bp <br>
+            {% for row in qap["Bp"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # Cp <br>
+            {% for row in qap["Cp"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # Z <br>
+            {{qap["Z"]}} <br>
+        </p>
+        {% endif %}
+
+        {% if qap_lcm == None %}
+        {% else %}
+        <h5>QAP(LCM)</h5>
+        <p>
+            # Ap<br>
+            {% for row in qap_lcm["Ap"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # Bp <br>
+            {% for row in qap_lcm["Bp"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # Cp <br>
+            {% for row in qap_lcm["Cp"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            # Z <br>
+            {{qap_lcm["Z"]}} <br>
+        </p>
+        {% endif %}
+    </section>
+{% endblock %}

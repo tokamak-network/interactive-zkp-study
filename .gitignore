@@ -1,3 +1,7 @@
 .venv/*
+
 __pycache__/*
 zkp/groth16/__pycache__/*
+
+.DS_Store
+templates/.DS_Store
