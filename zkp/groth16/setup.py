@@ -1,7 +1,7 @@
 from py_ecc.fields import bn128_FQ as FQ
 from py_ecc import bn128
 
-from .poly_utils import (
+from poly_utils import (
     # _multiply_polys,
     # _add_polys,
     # _subtract_polys,
@@ -46,6 +46,7 @@ def sigma13(numWires, alpha, beta, gamma, Ax_val, Bx_val, Cx_val):
     sigma1_3 = []
     VAL = [FR(0)]*numWires
     for i in range(numWires):
+        #TODO : apply auxiliary input size l
         if i in [0, numWires-1]:
             val = (beta*Ax_val[i] + alpha*Bx_val[i] + Cx_val[i]) / gamma
             VAL[i] = val
@@ -57,6 +58,7 @@ def sigma13(numWires, alpha, beta, gamma, Ax_val, Bx_val, Cx_val):
 def sigma14(numWires, alpha, beta, delta, Ax_val, Bx_val, Cx_val):
     sigma1_4 = []
     for i in range(numWires):
+        #TODO : apply auxiliary input size l
         if i in [0, numWires-1]:
             sigma1_4.append((FQ(0), FQ(0)))
         else:

@@ -26,6 +26,26 @@ from zkp.groth16.qap_creator_lcm import (
     r1cs_to_qap_times_lcm
 )
 
+from zkp.groth16.poly_utils import (
+    # _multiply_polys,
+    _add_polys,
+    # _subtract_polys,
+    # _div_polys,
+    # _eval_poly,
+    # _multiply_vec_matrix,
+    _multiply_vec_vec,
+    getNumWires,
+    getNumGates,
+    getFRPoly1D,
+    getFRPoly2D,
+    ax_val,
+    bx_val,
+    cx_val,
+    zx_val,
+    hxr,
+    hx_val
+)
+
 class FR(FQ):
     field_modulus = bn128.curve_order
 

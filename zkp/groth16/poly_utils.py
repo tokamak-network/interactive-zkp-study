@@ -73,10 +73,10 @@ def getNumGates(Ax):
     return len(Ax[0])
 
 def getFRPoly1D(poly):
-    return [ FR(int(num)) for num in poly ]
+    return [ FR(round(num)) for num in poly ]
 
 def getFRPoly2D(poly):
-    return [ [FR(int(num)) for num in vec] for vec in poly ]
+    return [ [FR(round(num)) for num in vec] for vec in poly ]
 
 # def eval_2d_poly(poly, x_val):
 #     o = []

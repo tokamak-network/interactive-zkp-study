@@ -1,7 +1,8 @@
 # Polynomials are stored as arrays, where the ith element in
 # the array is the ith degree coefficient
 
-from zkp.groth16.determinant import determinant_fast
+# from zkp.groth16.determinant import determinant_fast
+from determinant import determinant_fast
 
 det4 = 12.0
 # how it is calculated?

@@ -1,7 +1,7 @@
 from py_ecc.fields import bn128_FQ as FQ
 from py_ecc import bn128
 
-from .poly_utils import (
+from poly_utils import (
     # _multiply_polys,
     _add_polys,
     # _subtract_polys,
@@ -21,7 +21,7 @@ from .poly_utils import (
     hx_val
 )
 
-from .setup import (
+from setup import (
     sigma11,
     sigma12,
     sigma13,
@@ -80,11 +80,11 @@ def proof_c(numWires, numGates, sigma1_1, sigma1_2, sigma1_4, sigma1_5, Bx, Rx, 
     temp_proof_B = add(temp_proof_B, mult(sigma1_1[2], int(s)))
 
     #Build proof_C, g1_based
-    ## TODO : FIX ERROR HERE
     proof_C = add(add(mult(prf_A, int(s)), mult(temp_proof_B, int(r))), neg(mult(mult(sigma1_1[2], int(s)), int(r))))
 
     # proof_C = add(add(mult(proof_A, int(s)), mult(temp_proof_B, int(r))), neg(mult(mult(sigma1_1[2], int(s)), int(r))))
 
+    #TODO : apply auxiliary input size l
     for i in range(1, numWires-1):
         proof_C = add(proof_C, mult(sigma1_4[i], int(Rx[i])))
 

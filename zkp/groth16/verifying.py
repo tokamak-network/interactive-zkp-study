@@ -3,7 +3,7 @@ from py_ecc import bn128
 
 # from random import randint
 
-from .poly_utils import (
+from poly_utils import (
     # _multiply_polys,
     _add_polys,
     # _subtract_polys,
@@ -23,7 +23,7 @@ from .poly_utils import (
     hx_val
 )
 
-from .setup import (
+from setup import (
     sigma11,
     sigma12,
     sigma13,
@@ -33,7 +33,7 @@ from .setup import (
     sigma22
 )
 
-from .proving import (
+from proving import (
     proof_a,
     proof_b,
     proof_c
