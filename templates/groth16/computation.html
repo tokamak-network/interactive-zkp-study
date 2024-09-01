@@ -247,32 +247,62 @@
         {% else %}
         <h5>QAP(FR)</h5>
         <p>FR uses bn128 curve order as field modulus</p>
-        <p>FR modulus = {{fr_modulus}}</p>
+        <p>FR modulus = ...{{(fr_modulus|string)[-5:]}}</p>
         <p>
             # Ap<br>
             {% for row in qap_fr["Ax"] %}
-            {{row}} <br>
+                [{% for num in row %}
+                    {% if num|string|length <= 6 %}
+                        {{num}},
+                    {% else %}
+                        ...{{(num|string)[-3:]}},
+                    {% endif %}
+                {% endfor %}]<br>
             {% endfor %}
         </p>
         <p>
             # Bp <br>
             {% for row in qap_fr["Bx"] %}
-            {{row}} <br>
+                [{% for num in row %}
+                    {% if num|string|length <= 6 %}
+                        {{num}},
+                    {% else %}
+                        ...{{(num|string)[-3:]}},
+                    {% endif %}
+                {% endfor %}]<br>
             {% endfor %}
         </p>
         <p>
             # Cp <br>
             {% for row in qap_fr["Cx"] %}
-            {{row}} <br>
+                [{% for num in row %}
+                    {% if num|string|length <= 6 %}
+                        {{num}},
+                    {% else %}
+                        ...{{(num|string)[-3:]}},
+                    {% endif %}
+                {% endfor %}]<br>
             {% endfor %}
         </p>
         <p>
             # Z <br>
-            {{qap_fr["Zx"]}} <br>
+            [{% for num in qap_fr["Zx"] %}
+                {% if num|string|length <= 6 %}
+                    {{num}},
+                {% else %}
+                    ...{{(num|string)[-3:]}},
+                {% endif %}
+            {% endfor %}]<br>
         </p>
         <p>
             # R <br>
-            {{qap_fr["Rx"]}} <br>
+            [{% for num in qap_fr["Rx"] %}
+                {% if num|string|length <= 6 %}
+                    {{num}},
+                {% else %}
+                    ...{{(num|string)[-3:]}},
+                {% endif %}
+            {% endfor %}]<br>
         </p>
         {% endif %}        
     </section>
