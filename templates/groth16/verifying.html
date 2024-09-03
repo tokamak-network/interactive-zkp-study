@@ -1,0 +1,50 @@
+{% extends 'groth16/base-groth16.html' %}
+
+{% block content_in %}
+<h2>Verifying</h2>
+<section>
+    <h4>1.Getting proofs and public Rx from prover</h4>
+    <p>
+        <ul>
+           <li>proof_a : ...</li>
+           <li>proof_b : ...</li> 
+           <li>proof_c : ...</li> 
+           <li>public Rx : ...</li>
+        </ul>
+    </p>
+</section>
+<section>
+    <h4>2.Verify</h4>
+    <p>
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th scope="col">Index</th>
+                <th scope="col">Formula</th>
+                <th scope="col">Value</th>
+            </tr>
+            </thead>
+            <tbody>
+                <!-- LHS -->
+                <tr>
+                    <th scope="row">LHS(left hand side)</th>
+                    <td>
+                        LHS fomula
+                    </td>
+                    <td>LHS value</td>
+                </tr>
+
+                <!-- RHS -->
+                <tr>
+                    <th scope="row">RHS(right hand side)</th>
+                    <td>
+                        RHS fomula
+                    </td>
+                    <td>RHS value</td>
+                </tr>
+            </tbody>
+        </table>
+    </p>
+    <p>Is LHS == RHS ? True / False</p>
+</section>
+{% endblock %}

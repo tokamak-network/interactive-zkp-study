@@ -130,9 +130,9 @@ def test():
     r = FR(4106)
     s = FR(4565)
 
-    proof_A = proof_a(numWires, numGates, sigma1_1, sigma1_2, Ax, Rx, r)
-    proof_B = proof_b(numWires, numGates, sigma2_1, sigma2_2, Bx, Rx, s)
-    proof_C = proof_c(numWires, numGates, sigma1_1, sigma1_2, sigma1_4, sigma1_5, Bx, Rx, Hx, s, r, proof_A)
+    proof_A = proof_a(sigma1_1, sigma1_2, Ax, Rx, r)
+    proof_B = proof_b(sigma2_1, sigma2_2, Bx, Rx, s)
+    proof_C = proof_c(sigma1_1, sigma1_2, sigma1_4, sigma1_5, Bx, Rx, Hx, s, r, proof_A)
 
     result = verify(numWires, proof_A, proof_B, proof_C, sigma1_1, sigma1_3, sigma2_1, Rx)
 

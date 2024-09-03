@@ -33,13 +33,13 @@ class FR(FQ):
     field_modulus = bn128.curve_order
 
 def sigma11(alpha, beta, delta):
-    return [mult(g1, int(alpha)), mult(g1, int(beta)), mult(g1, int(delta))]
+    return [mult(g1, round(alpha)), mult(g1, round(beta)), mult(g1, round(delta))]
 
 def sigma12(numGates, x_val):
     sigma1_2 = []
     for i in range(numGates):
         val = x_val ** i
-        sigma1_2.append(mult(g1, int(val)))
+        sigma1_2.append(mult(g1, round(val)))
     return sigma1_2
 
 def sigma13(numWires, alpha, beta, gamma, Ax_val, Bx_val, Cx_val):
@@ -50,7 +50,7 @@ def sigma13(numWires, alpha, beta, gamma, Ax_val, Bx_val, Cx_val):
         if i in [0, numWires-1]:
             val = (beta*Ax_val[i] + alpha*Bx_val[i] + Cx_val[i]) / gamma
             VAL[i] = val
-            sigma1_3.append(mult(g1, int(val)))
+            sigma1_3.append(mult(g1, round(val)))
         else:
             sigma1_3.append((FQ(0), FQ(0)))
     return sigma1_3, VAL
@@ -63,22 +63,22 @@ def sigma14(numWires, alpha, beta, delta, Ax_val, Bx_val, Cx_val):
             sigma1_4.append((FQ(0), FQ(0)))
         else:
             val = (beta*Ax_val[i] + alpha*Bx_val[i] + Cx_val[i]) / delta
-            sigma1_4.append(mult(g1, int(val)))
+            sigma1_4.append(mult(g1, round(val)))
     return sigma1_4
 
 def sigma15(numGates, delta, x_val, Zx_val):
     sigma1_5 = []
     for i in range(numGates-1):
-        sigma1_5.append(mult(g1, int((x_val**i * Zx_val) / delta)))
+        sigma1_5.append(mult(g1, round((x_val**i * Zx_val) / delta)))
     return sigma1_5
 
 def sigma21(beta, delta, gamma):
-    return [mult(g2, int(beta)), mult(g2, int(gamma)), mult(g2, int(delta))]
+    return [mult(g2, round(beta)), mult(g2, round(gamma)), mult(g2, round(delta))]
 
 def sigma22(numGates, x_val):
     sigma2_2 = []
     for i in range(numGates):
-        sigma2_2.append(mult(g2, int(x_val**i)))
+        sigma2_2.append(mult(g2, round(x_val**i)))
     return sigma2_2
 
 def test():
@@ -90,6 +90,8 @@ def test():
     x_val = FR(3721)
 
     # EXAMPLE POLYNOMIAL
+    # numGates : 4
+    # numWires : 6
     Ap = [
         [-60.0, 110.0, -60.0, 10.0],
         [96.0, -136.0, 60.0, -8.0],

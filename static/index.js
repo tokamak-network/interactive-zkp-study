@@ -58,3 +58,50 @@ async function create_qap_fr(){
     document.getElementById('create-qap-fr-form').submit();
     console.log("create qap fr");
 }
+
+async function random_toxic(){
+    let maxValue = 999999999999;
+
+    let alpha = Math.floor(Math.random() * maxValue);
+    let beta = Math.floor(Math.random() * maxValue);
+    let delta = Math.floor(Math.random() * maxValue);
+    let gamma = Math.floor(Math.random() * maxValue);
+    let x_val = Math.floor(Math.random() * maxValue);
+    
+    let toxic_alpha = document.getElementsByName('toxic-alpha')[0]
+    let toxic_beta = document.getElementsByName('toxic-beta')[0]
+    let toxic_delta = document.getElementsByName('toxic-delta')[0]
+    let toxic_gamma = document.getElementsByName('toxic-gamma')[0]
+    let toxic_x_val = document.getElementsByName('toxic-x-val')[0]
+
+    toxic_alpha.value = alpha;
+    toxic_beta.value = beta;
+    toxic_delta.value = delta;
+    toxic_gamma.value =  gamma;
+    toxic_x_val.value = x_val;
+}
+
+async function random_toxic_clear(){
+    let toxic_alpha = document.getElementsByName('toxic-alpha')[0]
+    let toxic_beta = document.getElementsByName('toxic-beta')[0]
+    let toxic_delta = document.getElementsByName('toxic-delta')[0]
+    let toxic_gamma = document.getElementsByName('toxic-gamma')[0]
+    let toxic_x_val = document.getElementsByName('toxic-x-val')[0]
+
+    toxic_alpha.value = null;
+    toxic_beta.value = null;
+    toxic_delta.value = null;
+    toxic_gamma.value = null;
+    toxic_x_val.value = null;
+
+    toxic_alpha.setAttribute('placeholder', 'alpha');
+    toxic_beta.setAttribute('placeholder', 'beta');
+    toxic_delta.setAttribute('placeholder', 'delta');
+    toxic_gamma.setAttribute('placeholder', 'gamma');
+    toxic_x_val.setAttribute('placeholder', 'x_val');   
+}
+
+async function save_toxic(){
+    document.getElementById('save-toxic-form').submit();
+    console.log("toxic form submitted");
+}

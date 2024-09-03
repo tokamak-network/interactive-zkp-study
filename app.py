@@ -314,4 +314,28 @@ def create_qap_fr():
 
 @app.route("/groth/setup")
 def main_setup():
-    return render_template("groth16/setup.html")
+    toxic = session.get("toxic")
+    return render_template("groth16/setup.html", toxic=toxic)
+
+@app.route("/groth/setup/toxic/save", methods=["POST"])
+def setup_save_toxic():
+    if request.method == "POST":
+        toxic_alpha = request.form['toxic-alpha']
+        toxic_beta = request.form['toxic-beta']
+        toxic_delta = request.form['toxic-delta']
+        toxic_gamma = request.form['toxic-gamma']
+        toxic_x_val = request.form['toxic-x-val']
+
+        o = {"alpha":toxic_alpha, "beta" : toxic_beta, "delta" : toxic_delta, "gamma" : toxic_gamma, "x_val": toxic_x_val}
+        session["toxic"] = o
+        return redirect(url_for('main_setup'))
+    else:
+        return redirect(url_for('main_setup'))
+
+@app.route("/groth/proving")
+def main_proving():
+    return render_template("groth16/proving.html")
+
+@app.route("/groth/verifying")
+def main_verifying():
+    return render_template("groth16/verifying.html")

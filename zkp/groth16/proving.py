@@ -49,7 +49,9 @@ class FR(FQ):
 # r = FR(4106)
 # s = FR(4565)
 
-def proof_a(numWires, numGates, sigma1_1, sigma1_2, Ax, Rx, r):
+def proof_a(sigma1_1, sigma1_2, Ax, Rx, r):
+    numGates = getNumGates(Ax)
+    numWires = getNumWires(Ax)
     proof_A = sigma1_1[0]
     for i in range(numWires):
         temp = pointInf1
@@ -59,7 +61,9 @@ def proof_a(numWires, numGates, sigma1_1, sigma1_2, Ax, Rx, r):
     proof_A = add(proof_A, mult(sigma1_1[2], int(r)))
     return proof_A
 
-def proof_b(numWires, numGates, sigma2_1, sigma2_2, Bx, Rx, s):
+def proof_b(sigma2_1, sigma2_2, Bx, Rx, s):
+    numGates = getNumGates(Bx)
+    numWires = getNumWires(Bx)
     proof_B = sigma2_1[0]
     for i in range(numWires):
         temp = pointInf2
@@ -69,7 +73,9 @@ def proof_b(numWires, numGates, sigma2_1, sigma2_2, Bx, Rx, s):
     proof_B = add(proof_B, mult(sigma2_1[2], int(s)))
     return proof_B
 
-def proof_c(numWires, numGates, sigma1_1, sigma1_2, sigma1_4, sigma1_5, Bx, Rx, Hx, s, r, prf_A):
+def proof_c(sigma1_1, sigma1_2, sigma1_4, sigma1_5, Bx, Rx, Hx, s, r, prf_A):
+    numGates = getNumGates(Bx)
+    numWires = getNumWires(Bx)
     #Build temp_proof_B
     temp_proof_B = sigma1_1[1]
     for i in range(numWires):
@@ -159,9 +165,9 @@ def test():
     r = FR(4106)
     s = FR(4565)
 
-    proof_A = proof_a(numWires, numGates, sigma1_1, sigma1_2, Ax, Rx, r)
-    proof_B = proof_b(numWires, numGates, sigma2_1, sigma2_2, Bx, Rx, s)
-    proof_C = proof_c(numWires, numGates, sigma1_1, sigma1_2, sigma1_4, sigma1_5, Bx, Rx, Hx, s, r, proof_A)
+    proof_A = proof_a(sigma1_1, sigma1_2, Ax, Rx, r)
+    proof_B = proof_b(sigma2_1, sigma2_2, Bx, Rx, s)
+    proof_C = proof_c(sigma1_1, sigma1_2, sigma1_4, sigma1_5, Bx, Rx, Hx, s, r, proof_A)
 
     def scalar_vec(scalar, vec):
         return [scalar*num for num in vec]

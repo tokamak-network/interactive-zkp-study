@@ -291,9 +291,9 @@ def test_proving_and_verifying():
     r = FR(4106)
     s = FR(4565)
 
-    proof_A = proof_a(numWires, numGates, sigma1_1, sigma1_2, Ax, Rx, r)
-    proof_B = proof_b(numWires, numGates, sigma2_1, sigma2_2, Bx, Rx, s)
-    proof_C = proof_c(numWires, numGates, sigma1_1, sigma1_2, sigma1_4, sigma1_5, Bx, Rx, Hx, s, r, proof_A)
+    proof_A = proof_a(sigma1_1, sigma1_2, Ax, Rx, r)
+    proof_B = proof_b(sigma2_1, sigma2_2, Bx, Rx, s)
+    proof_C = proof_c(sigma1_1, sigma1_2, sigma1_4, sigma1_5, Bx, Rx, Hx, s, r, proof_A)
 
     def scalar_vec(scalar, vec):
         return [scalar*num for num in vec]

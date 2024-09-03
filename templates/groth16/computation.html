@@ -1,9 +1,9 @@
 {% extends 'groth16/base-groth16.html' %}
 
 {% block content_in %}
-
+    <h2>Computation</h2>
     <section>
-        <h2>Step1. Define Computation</h2>
+        <h4>1. Define</h4>
         <p>
             <button type="button" onclick="save_code()" class="btn btn-primary">Save</button>
             <button type="button" onclick="ast_table()" class="btn btn-primary">
@@ -68,7 +68,7 @@
     </section>
 
     <section>
-        <h2>Step2. Flatcode</h2>
+        <h4>2. Flatcode</h4>
         <p>
             <button type="button" onclick="flatcode_table()" class="btn btn-primary">
                 <form action="{{url_for('flatcode_table')}}" method="post" id="flatcode-form">
@@ -107,7 +107,7 @@
     </section>
     
     <section>
-        <h2>Step3. R1CS</h2>
+        <h4>3. R1CS</h4>
         <p> 
             <button type="button" onclick="abc_matrix()" class="btn btn-primary">
                 <form action="{{url_for('abc_matrix')}}" method="post" id="abc-matrix-form">
@@ -170,7 +170,7 @@
     </section>
     
     <section>
-        <h2>Step4. QAP</h2>
+        <h4>4. QAP</h4>
         <p>
             <button type="button" onclick="create_qap()" class="btn btn-primary">
                 <form action="{{url_for('create_qap')}}" method="post" id="create-qap-form">
@@ -247,7 +247,7 @@
         {% else %}
         <h5>QAP(FR)</h5>
         <p>FR uses bn128 curve order as field modulus</p>
-        <p>FR modulus = ...{{(fr_modulus|string)[-5:]}}</p>
+        <p>FR modulus = {{(fr_modulus|string)}}</p>
         <p>
             # Ap<br>
             {% for row in qap_fr["Ax"] %}
