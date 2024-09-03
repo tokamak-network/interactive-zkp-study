@@ -61,57 +61,56 @@
         <p>
             Ap <br>
             {% for row in polys["Ap"] %}
-            {{row}} <br>
+                [{{snl(row)}}] <br>
             {% endfor %}
         </p>
         <p>
             Bp <br>
             {% for row in polys["Bp"] %}
-            {{row}} <br>
+                [{{snl(row)}}] <br>
             {% endfor %}
         </p>
         <p>
             Cp <br>
             {% for row in polys["Cp"] %}
-            {{row}} <br>
+                [{{snl(row)}}] <br>
             {% endfor %}
         </p>
         <p>
             Z = (x-1)(x-2)(x-3)...(x-numGates)<br>
-            {{polys["Zp"]}}
+            [{% for num in polys['Zp'] %}
+                {{sn(num)}}
+            {% endfor %}]
         </p>
     {% endif %}
     
-    <h5>A(x_val), B(x_val), C(x_val), Z(x_val)</h5>
+   
     {% if polys_x_val == None %}
     {% else %}
+        <h5>A(x_val), B(x_val), C(x_val), Z(x_val)</h5>
         <p>
             <b>A(x_val)</b> <br>
-            [ <br>
-            {% for row in polys_x_val.Ax_val %}
-            {{row}}, <br>
-            {% endfor %}
+            [ 
+                {{snl(polys_x_val.Ax_val)}}
             ]
         </p>
         <p>
             <b>B(x_val)</b> <br>
-            [ <br>
-            {% for row in polys_x_val.Bx_val %}
-            {{row}}, <br>
-            {% endfor %}
+            [ 
+            {{snl(polys_x_val.Bx_val)}}
             ]
         </p>
         <p>
             <b>C(x_val)</b> <br>
-            [ <br>
-            {% for row in polys_x_val.Cx_val %}
-            {{row}}, <br>
-            {% endfor %}
+            [
+            {{snl(polys_x_val.Cx_val)}}
             ]
         </p>
         <p>
             <b>Z(x_val)</b> <br>
-            {{polys_x_val.Zx_val}}
+            [
+            {{sn(polys_x_val.Zx_val)}}
+            ]
         </p>
     {% endif %}
     

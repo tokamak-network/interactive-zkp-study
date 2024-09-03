@@ -1,0 +1,17 @@
+{% macro shorten_number(num) %}
+    {% if num|string|length <= 6 %}
+        {{num}}
+    {% else %}
+        ...{{(num|string)[-3:]}}
+    {% endif %}
+{% endmacro %}
+
+{% macro shorten_numbers_list(num_list) %}
+    {% for num in num_list %}
+        {% if loop.last %}
+            {{shorten_number(num)}}
+        {% else %}
+            {{shorten_number(num)}},
+        {% endif%}
+    {% endfor %}
+{% endmacro %}

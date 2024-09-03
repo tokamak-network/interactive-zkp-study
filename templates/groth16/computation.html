@@ -251,58 +251,28 @@
         <p>
             # Ap<br>
             {% for row in qap_fr["Ax"] %}
-                [{% for num in row %}
-                    {% if num|string|length <= 6 %}
-                        {{num}},
-                    {% else %}
-                        ...{{(num|string)[-3:]}},
-                    {% endif %}
-                {% endfor %}]<br>
+                [{{snl(row)}}]<br>
             {% endfor %}
         </p>
         <p>
             # Bp <br>
             {% for row in qap_fr["Bx"] %}
-                [{% for num in row %}
-                    {% if num|string|length <= 6 %}
-                        {{num}},
-                    {% else %}
-                        ...{{(num|string)[-3:]}},
-                    {% endif %}
-                {% endfor %}]<br>
+                [{{snl(row)}}]<br>
             {% endfor %}
         </p>
         <p>
             # Cp <br>
             {% for row in qap_fr["Cx"] %}
-                [{% for num in row %}
-                    {% if num|string|length <= 6 %}
-                        {{num}},
-                    {% else %}
-                        ...{{(num|string)[-3:]}},
-                    {% endif %}
-                {% endfor %}]<br>
+                [{{snl(row)}}]<br>
             {% endfor %}
         </p>
         <p>
             # Z <br>
-            [{% for num in qap_fr["Zx"] %}
-                {% if num|string|length <= 6 %}
-                    {{num}},
-                {% else %}
-                    ...{{(num|string)[-3:]}},
-                {% endif %}
-            {% endfor %}]<br>
+            [{{snl(qap_fr["Zx"])}}]
         </p>
         <p>
             # R <br>
-            [{% for num in qap_fr["Rx"] %}
-                {% if num|string|length <= 6 %}
-                    {{num}},
-                {% else %}
-                    ...{{(num|string)[-3:]}},
-                {% endif %}
-            {% endfor %}]<br>
+            {{qap_fr["Rx"]}}
         </p>
         {% endif %}        
     </section>
