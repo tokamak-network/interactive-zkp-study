@@ -315,7 +315,9 @@ def create_qap_fr():
 @app.route("/groth/setup")
 def main_setup():
     toxic = session.get("toxic")
-    return render_template("groth16/setup.html", toxic=toxic)
+    polys = session.get("polys")
+    polys_x_val = session.get("polys_x_val")
+    return render_template("groth16/setup.html", toxic=toxic, polys=polys, polys_x_val=polys_x_val)
 
 @app.route("/groth/setup/toxic/save", methods=["POST"])
 def setup_save_toxic():
@@ -335,9 +337,77 @@ def setup_save_toxic():
 @app.route("/groth/setup/toxic/clear", methods=["POST"])
 def clear_toxic():
     if request.method == "POST":
-        print("clear toxic in")
         session["toxic"] = None
+        session["polys"] = None
+        session["polys_x_val"] = None
         return redirect(url_for('main_setup'))
+    else:
+        return redirect(url_for('main_setup'))
+    
+# @app.route("/groth/setup/polys", methods=["POST"])
+# def clear_toxic():
+#     if request.method == "POST":
+#         return redirect(url_for('main_setup'))
+#     else:
+#         return redirect(url_for('main_setup'))
+    
+@app.route("/groth/setup/polys", methods=["POST"])
+def get_polys():
+    if request.method == "POST":
+        user_code = session.get("code")
+        if user_code:
+            inputs, body = extract_inputs_and_body(parse(user_code))
+            flatcode = flatten_body(body)
+            A, B, C = flatcode_to_r1cs(inputs, flatcode)
+            Ap, Bp, Cp, Z = r1cs_to_qap_times_lcm(A, B, C)
+
+            Ax = [ [int(FR(int(n))) for n in vec] for vec in Ap ]
+            Bx = [ [int(FR(int(n))) for n in vec] for vec in Bp ]
+            Cx = [ [int(FR(int(n))) for n in vec] for vec in Cp ]
+            Zx = [ int(FR(int(num))) for num in Z ]
+
+            o = {"Ap": Ax, "Bp": Bx, "Cp":Cx, "Zp":Zx}
+            session["polys"] = o
+            return redirect(url_for('main_setup'))
+    else:
+        return redirect(url_for('main_setup'))
+    
+@app.route("/groth/setup/polys/evaluated", methods=["POST"])
+def get_polys_evaluated():
+    if request.method == "POST":
+        user_code = session.get("code")
+        toxic = session.get("toxic")
+        if user_code:
+
+            x_val = FR(int(toxic["x_val"]))
+
+            print("x_val?? : {}".format(x_val))
+
+            inputs, body = extract_inputs_and_body(parse(user_code))
+            flatcode = flatten_body(body)
+            A, B, C = flatcode_to_r1cs(inputs, flatcode)
+            Ap, Bp, Cp, Z = r1cs_to_qap_times_lcm(A, B, C)
+
+            Ax = getFRPoly2D(Ap)
+            Bx = getFRPoly2D(Bp)
+            Cx = getFRPoly2D(Cp)
+            Zx = getFRPoly1D(Z)
+
+            Ax_val = ax_val(Ax, x_val)
+            Bx_val = bx_val(Bx, x_val)
+            Cx_val = cx_val(Cx, x_val)
+            Zx_val = zx_val(Zx, x_val)
+
+            Ax_val_int = [ int(num) for num in Ax_val ]
+            Bx_val_int = [ int(num) for num in Bx_val ]
+            Cx_val_int = [ int(num) for num in Cx_val ]
+            Zx_val_int = int(Zx_val)
+
+            print("Ax_Val : {}".format(type(Ax_val[0])))
+
+            o = {"Ax_val": Ax_val_int, "Bx_val": Bx_val_int, "Cx_val":Cx_val_int, "Zx_val":Zx_val_int}
+            session["polys_x_val"] = o
+            return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
 

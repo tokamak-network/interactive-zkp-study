@@ -111,3 +111,11 @@ async function save_toxic(){
 async function clear_toxic(){
     document.getElementById('clear-toxic').submit();
 }
+
+async function retrieve_polys(){
+    document.getElementById('retrieve-poly-form').submit();
+}
+
+async function calc_polys_evaluation(){
+    document.getElementById('calc-polys-evaluation').submit();
+}

@@ -5,10 +5,10 @@
 <section>
     <h4>1.Toxic Waste Generation</h4>
     <p>
-        <button type="button" onclick="random_toxic()" class="btn btn-primary">random</button>
+        <button type="button" onclick="random_toxic()" class="btn btn-primary">Random</button>
         <button type="button" onclick="random_toxic_clear()" class="btn btn-primary">
             <form action="{{url_for("clear_toxic")}}" method="post" id="clear-toxic">
-                clear
+                Clear
             </form>
         </button>
         <button type="button" onclick="save_toxic()" class="btn btn-primary">Save</button>
@@ -43,33 +43,79 @@
 <section>
     <h4>2.Toxic to polynomials</h4>
     <p>
-        <button type="button" onclick="" class="btn btn-primary">Ax, Bx, Cx, Hx, Zx</button>
-        <button type="button" onclick="" class="btn btn-primary">
-            <form action="" method="post" id="ast-form">
-                x_val in
+        <button type="button" onclick="retrieve_polys()" class="btn btn-primary">
+            <form action="{{url_for("get_polys")}}" method="post" id="retrieve-poly-form">
+                Ax, Bx, Cx, Hx, Zx
             </form>
         </button>
+        <button type="button" onclick="calc_polys_evaluation()" class="btn btn-primary">
+            <form action="{{url_for("get_polys_evaluated")}}" method="post" id="calc-polys-evaluation">
+                A(x_val), Bx(x_val), C(x_val), Z(x_val)
+            </form>
+        </button>
+        <button type="button" onclick="" class="btn btn-primary">Clear</button>
     </p>
-    <p>
-        Ap(x_val) = Ax_val <br>
-        [29952.0, -57264.0, 35904.0, -8400.0, 672.0]
-    </p>
-    <p>
-        Bp(x_val) = Bx_val <br>
-        [-2592.0, 6576.0, -3959, 912.0, -72.0]
-    </p>
-    <p>
-        Cp(x_val) = Cx_val <br>
-        [..424.0, ..648.0, -2868479., 525312.0, -34560.0]
-    </p>
-    <p>
-        Sol(Ap(x_val)*Bp(x_val)-Cp(x_val)) = Zp(x_val) <br>
-        [...20160.0, ...992.0, ...672.0, ...3855, ...6815, ..528.0, ...08.0, ..64.0, ...84.0]
-    </p>
-    <p>
-        Z cofactor, Hp(x_val) =  = Hx_val <br>
-        [..168.0, ...08.0, ...1904.0, ...84.0]
-    </p>
+    {% if polys == None %}
+    {% else %}
+    <h5>Ap, Bp, Cp, Z</h5>
+        <p>
+            Ap <br>
+            {% for row in polys["Ap"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            Bp <br>
+            {% for row in polys["Bp"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            Cp <br>
+            {% for row in polys["Cp"] %}
+            {{row}} <br>
+            {% endfor %}
+        </p>
+        <p>
+            Z = (x-1)(x-2)(x-3)...(x-numGates)<br>
+            {{polys["Zp"]}}
+        </p>
+    {% endif %}
+    
+    <h5>A(x_val), B(x_val), C(x_val), Z(x_val)</h5>
+    {% if polys_x_val == None %}
+    {% else %}
+        <p>
+            <b>A(x_val)</b> <br>
+            [ <br>
+            {% for row in polys_x_val.Ax_val %}
+            {{row}}, <br>
+            {% endfor %}
+            ]
+        </p>
+        <p>
+            <b>B(x_val)</b> <br>
+            [ <br>
+            {% for row in polys_x_val.Bx_val %}
+            {{row}}, <br>
+            {% endfor %}
+            ]
+        </p>
+        <p>
+            <b>C(x_val)</b> <br>
+            [ <br>
+            {% for row in polys_x_val.Cx_val %}
+            {{row}}, <br>
+            {% endfor %}
+            ]
+        </p>
+        <p>
+            <b>Z(x_val)</b> <br>
+            {{polys_x_val.Zx_val}}
+        </p>
+    {% endif %}
+    
+
 </section>
 <section>
     <h4>3.Sigmas</h4>
