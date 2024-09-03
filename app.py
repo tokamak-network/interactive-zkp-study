@@ -411,6 +411,15 @@ def get_polys_evaluated():
     else:
         return redirect(url_for('main_setup'))
 
+@app.route("/groth/setup/polys/clear", methods=["POST"])
+def clear_polys():
+    if request.method == "POST":
+        session["polys"] = None
+        session["polys_x_val"] = None
+        return redirect(url_for('main_setup'))
+    else:
+        return redirect(url_for('main_setup'))
+
 @app.route("/groth/proving")
 def main_proving():
     return render_template("groth16/proving.html")

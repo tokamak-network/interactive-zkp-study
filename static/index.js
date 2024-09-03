@@ -119,3 +119,7 @@ async function retrieve_polys(){
 async function calc_polys_evaluation(){
     document.getElementById('calc-polys-evaluation').submit();
 }
+
+async function clear_polys(){
+    document.getElementById('clear-polys-form').submit();
+}
