@@ -98,10 +98,16 @@ async function random_toxic_clear(){
     toxic_beta.setAttribute('placeholder', 'beta');
     toxic_delta.setAttribute('placeholder', 'delta');
     toxic_gamma.setAttribute('placeholder', 'gamma');
-    toxic_x_val.setAttribute('placeholder', 'x_val');   
+    toxic_x_val.setAttribute('placeholder', 'x_val');
+    
+    clear_toxic();
 }
 
 async function save_toxic(){
     document.getElementById('save-toxic-form').submit();
     console.log("toxic form submitted");
+}
+
+async function clear_toxic(){
+    document.getElementById('clear-toxic').submit();
 }

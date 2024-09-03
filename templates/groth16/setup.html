@@ -6,7 +6,11 @@
     <h4>1.Toxic Waste Generation</h4>
     <p>
         <button type="button" onclick="random_toxic()" class="btn btn-primary">random</button>
-        <button type="button" onclick="random_toxic_clear()" class="btn btn-primary">clear</button>
+        <button type="button" onclick="random_toxic_clear()" class="btn btn-primary">
+            <form action="{{url_for("clear_toxic")}}" method="post" id="clear-toxic">
+                clear
+            </form>
+        </button>
         <button type="button" onclick="save_toxic()" class="btn btn-primary">Save</button>
     </p>
     <p>
@@ -31,7 +35,7 @@
         </form>
         {% if toxic == None %}
         {% else %}
-            Saved : {{toxic}}   
+            Saved : {{toxic}}
         {% endif %}
         
     </p>

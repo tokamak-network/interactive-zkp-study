@@ -331,6 +331,15 @@ def setup_save_toxic():
         return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
+    
+@app.route("/groth/setup/toxic/clear", methods=["POST"])
+def clear_toxic():
+    if request.method == "POST":
+        print("clear toxic in")
+        session["toxic"] = None
+        return redirect(url_for('main_setup'))
+    else:
+        return redirect(url_for('main_setup'))
 
 @app.route("/groth/proving")
 def main_proving():
