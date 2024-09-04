@@ -123,15 +123,24 @@
 <section>
     <h4>3.Sigmas</h4>
     <p>
-        <button type="button" onclick="" class="btn btn-primary">Formula</button>
-        <button type="button" onclick="" class="btn btn-primary">Calculate</button>
+        <button type="button" onclick="get_formula()" class="btn btn-primary">
+            <form action="{{url_for("sigma_formula")}}" method="post" id="get-formula-form">
+                Formula    
+            </form>
+        </button>
+        <button type="button" onclick="" class="btn btn-primary">
+            Calculate
+        </button>
     </p>
     
     <p>
-        nWires = ... <br>
-        nGates = ... <br>
-        G1 = ... <br>
-        G2 = ... <br>
+        nWires = {{numWires}}<br>
+        nGates = {{numGates}}<br>
+        G1 = {{g1}}<br>
+        G2 = [<br>
+         [{{snl(g2[0])}}], <br>
+         [{{snl(g2[0])}}] <br>
+        ]
     </p>
     <p>
         <table class="table table-bordered">

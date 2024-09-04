@@ -123,3 +123,7 @@ async function calc_polys_evaluation(){
 async function clear_polys(){
     document.getElementById('clear-polys-form').submit();
 }
+
+async function get_formula(){
+    document.getElementById('get-formula-form').submit();
+}

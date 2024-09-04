@@ -49,6 +49,9 @@ from zkp.groth16.poly_utils import (
 class FR(FQ):
     field_modulus = bn128.curve_order
 
+G1 = bn128.G1
+G2 = bn128.G2
+
 app = Flask(__name__)
 app.secret_key = "key"
 
@@ -317,7 +320,20 @@ def main_setup():
     toxic = session.get("toxic")
     polys = session.get("polys")
     polys_x_val = session.get("polys_x_val")
-    return render_template("groth16/setup.html", toxic=toxic, polys=polys, polys_x_val=polys_x_val)
+    numWires = session.get("numWires")
+    numGates = session.get("numGates")
+    g1 = session.get("g1")
+    g2 = session.get("g2")
+    
+    return render_template("groth16/setup.html", \
+                           toxic = toxic, \
+                           polys = polys, \
+                           polys_x_val = polys_x_val, \
+                           numWires = numWires, \
+                           numGates = numGates, \
+                           g1 = g1, \
+                           g2 = g2,
+                           )
 
 @app.route("/groth/setup/toxic/save", methods=["POST"])
 def setup_save_toxic():
@@ -340,6 +356,10 @@ def clear_toxic():
         session["toxic"] = None
         session["polys"] = None
         session["polys_x_val"] = None
+        session["numWires"] = None
+        session["numGates"] = None
+        session["g1"] = None
+        session["g2"] = None
         return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
@@ -417,6 +437,43 @@ def clear_polys():
         session["polys"] = None
         session["polys_x_val"] = None
         return redirect(url_for('main_setup'))
+    else:
+        return redirect(url_for('main_setup'))
+    
+@app.route("/groth/setup/sigma/formula", methods=["POST"])
+def sigma_formula():
+    if request.method == "POST":
+        user_code = session.get("code")
+        if user_code:
+            session["formula"] = True
+            inputs, body = extract_inputs_and_body(parse(user_code))
+            flatcode = flatten_body(body)
+            A, B, C = flatcode_to_r1cs(inputs, flatcode)
+            Ap, Bp, Cp, Z = r1cs_to_qap_times_lcm(A, B, C)
+
+            numWires = getNumWires(Ap)
+            numGates = getNumGates(Ap)
+            session["numWires"] = numWires
+            session["numGates"] = numGates
+
+            g1_int = [int(f) for f in G1]
+            g2_0 = [int(G2[0].coeffs[0]), int(G2[0].coeffs[1])]
+            g2_1 = [int(G2[1].coeffs[0]), int(G2[1].coeffs[0])]
+            g2_int = [g2_0, g2_1]
+
+            session["g1"] = g1_int
+            session["g2"] = g2_int
+
+            # print("Wires and Gates : {}, {}".format(numWires, numGates))
+            # print("G1 : {}".format(G1))
+            # print("type(G1[0]) : {}".format(type(G1[0])))
+            # print("G2 : {}".format(G2))
+
+            # print("g1 int {}".format(g1_int))
+            # print("g2 int {}".format(g2_int))
+
+
+            return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
 
