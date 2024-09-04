@@ -133,6 +133,7 @@ def main():
 @app.route("/code", methods=['POST'])
 def save_code():
     if request.method == "POST":
+        session.clear() #clear session before save
         user_code = request.form['z-code']
         session["code"] = user_code
         # return render_template('computation.html', code=session["code"])
