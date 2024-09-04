@@ -6,12 +6,12 @@
     <h4>1.Toxic Waste Generation</h4>
     <p>
         <button type="button" onclick="random_toxic()" class="btn btn-primary">Random</button>
+        <button type="button" onclick="save_toxic()" class="btn btn-primary">Save</button>
         <button type="button" onclick="random_toxic_clear()" class="btn btn-primary">
             <form action="{{url_for("clear_toxic")}}" method="post" id="clear-toxic">
                 Clear
             </form>
         </button>
-        <button type="button" onclick="save_toxic()" class="btn btn-primary">Save</button>
     </p>
     <p>
         <form action="{{url_for('setup_save_toxic')}}" method="post" id="save-toxic-form">
@@ -121,7 +121,7 @@
 
 </section>
 <section>
-    <h4>3.Sigmas</h4>
+    <h4>3.Sigmas = proving key?</h4>
     <p>
         <button type="button" onclick="get_formula()" class="btn btn-primary">
             <form action="{{url_for("sigma_formula")}}" method="post" id="get-formula-form">
@@ -131,6 +131,11 @@
         <button type="button" onclick="" class="btn btn-primary">
             Calculate
         </button>
+        <button type="button" onclick="clear_sigmas()" class="btn btn-primary">
+            <form action="{{url_for("clear_sigmas")}}" method="post" id="clear-sigmas-form">
+                Clear
+            </form>
+        </button>   
     </p>
     {% if numWires == None %}
     {% else %}

@@ -124,6 +124,10 @@ async function clear_polys(){
     document.getElementById('clear-polys-form').submit();
 }
 
+async function clear_sigmas(){
+    document.getElementById('clear-sigmas-form').submit();
+}
+
 async function get_formula(){
     document.getElementById('get-formula-form').submit();
 }

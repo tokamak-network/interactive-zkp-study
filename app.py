@@ -445,7 +445,6 @@ def sigma_formula():
     if request.method == "POST":
         user_code = session.get("code")
         if user_code:
-            session["formula"] = True
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
             A, B, C = flatcode_to_r1cs(inputs, flatcode)
@@ -474,6 +473,17 @@ def sigma_formula():
 
 
             return redirect(url_for('main_setup'))
+    else:
+        return redirect(url_for('main_setup'))
+    
+@app.route("/groth/setup/sigma/clear", methods=["POST"])
+def clear_sigmas():
+    if request.method == "POST":
+        session["numWires"] = None
+        session["numGates"] = None
+        session["g1"] = None
+        session["g2"] = None
+        return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
 
