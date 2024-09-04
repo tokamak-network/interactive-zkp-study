@@ -131,3 +131,7 @@ async function clear_sigmas(){
 async function get_formula(){
     document.getElementById('get-formula-form').submit();
 }
+
+async function calculate_sigmas(){
+    document.getElementById('calculate-sigmas-form').submit();
+}

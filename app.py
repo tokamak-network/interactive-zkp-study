@@ -46,6 +46,16 @@ from zkp.groth16.poly_utils import (
     hx_val
 )
 
+from zkp.groth16.setup import (
+    sigma11,
+    sigma12,
+    sigma13,
+    sigma14,
+    sigma15,
+    sigma21,
+    sigma22
+)
+
 class FR(FQ):
     field_modulus = bn128.curve_order
 
@@ -325,6 +335,7 @@ def main_setup():
     numGates = session.get("numGates")
     g1 = session.get("g1")
     g2 = session.get("g2")
+    sigmas = session.get("sigmas")
     
     return render_template("groth16/setup.html", \
                            toxic = toxic, \
@@ -333,7 +344,8 @@ def main_setup():
                            numWires = numWires, \
                            numGates = numGates, \
                            g1 = g1, \
-                           g2 = g2,
+                           g2 = g2, \
+                           sigmas = sigmas \
                            )
 
 @app.route("/groth/setup/toxic/save", methods=["POST"])
@@ -361,6 +373,7 @@ def clear_toxic():
         session["numGates"] = None
         session["g1"] = None
         session["g2"] = None
+        # session["sigmas"] = None
         return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
@@ -477,6 +490,89 @@ def sigma_formula():
     else:
         return redirect(url_for('main_setup'))
     
+@app.route("/groth/setup/sigma/calc", methods=["POST"])
+def calculate_sigmas():
+    if request.method == "POST":
+        user_code = session.get("code")
+        toxic = session.get("toxic")
+        if user_code:
+            
+            if toxic == None:
+                return redirect(url_for('main_setup'))
+            
+            inputs, body = extract_inputs_and_body(parse(user_code))
+            flatcode = flatten_body(body)
+            A, B, C = flatcode_to_r1cs(inputs, flatcode)
+            Ap, Bp, Cp, Z = r1cs_to_qap_times_lcm(A, B, C)
+
+            Ax = getFRPoly2D(Ap)
+            Bx = getFRPoly2D(Bp)
+            Cx = getFRPoly2D(Cp)
+            Zx = getFRPoly1D(Z)
+
+            numGates = getNumGates(Ax)
+            numWires = getNumWires(Ax)
+
+            x_val = FR(int(toxic["x_val"]))
+            alpha = FR(int(toxic["alpha"]))
+            beta = FR(int(toxic["beta"]))
+            delta = FR(int(toxic["delta"]))
+            gamma = FR(int(toxic["gamma"]))
+            
+            Ax_val = ax_val(Ax, x_val)
+            Bx_val = bx_val(Bx, x_val)
+            Cx_val = cx_val(Cx, x_val)
+            Zx_val = zx_val(Zx, x_val)
+
+            s11 = sigma11(alpha, beta, delta)
+            s12 = sigma12(numGates, x_val)
+            s13, VAL = sigma13(numWires, alpha, beta, gamma, Ax_val, Bx_val, Cx_val)
+            s14 = sigma14(numWires, alpha, beta, delta, Ax_val, Bx_val, Cx_val)
+            s15 = sigma15(numGates, delta, x_val, Zx_val)
+            s21 = sigma21(beta, delta, gamma)
+            s22 = sigma22(numGates, x_val)
+
+            def turn_point_int(li):
+                return [int(num) for num in li]
+            
+            def turn_g2_int(g2p):
+                o = []
+                g2p0 = [int(g2p[0].coeffs[0]), int(g2p[0].coeffs[1])]
+                g2p1 = [int(g2p[1].coeffs[0]), int(g2p[1].coeffs[0])]
+                g2_int = [g2p0, g2p1]
+                return g2_int
+            
+            s11_int = [turn_point_int(point) for point in s11]
+            s12_int = [turn_point_int(point) for point in s12]
+            s13_int = [turn_point_int(point) for point in s13]
+            s14_int = [turn_point_int(point) for point in s14]
+            s15_int = [turn_point_int(point) for point in s15]
+            s21_int = [turn_g2_int(point) for point in s21]
+            s22_int = [turn_g2_int(point) for point in s22]
+            
+            # print("11 : {}".format(s11))
+            # print("12 : {}".format(s12))
+            # print("13 : {}".format(s13))
+            # print("14 : {}".format(s14))
+            # print("15 : {}".format(s15))
+            # print("21 : {}".format(s21))
+            # print("21 : {}".format(s22))
+
+            # print("11_i : {}".format(s11_int))
+            # print("12_i : {}".format(s12_int))
+            # print("13_i : {}".format(s13_int))
+            # print("14_i : {}".format(s14_int))
+            # print("15_i : {}".format(s15_int))
+            # print("21_i : {}".format(s21_int))
+            # print("21_i : {}".format(s22_int))
+
+            o = {"1_1":s11_int, "1_2":s12_int, "1_3":s13_int, "1_4":s14_int, "1_5":s15_int, "2_1":s21_int, "2_2":s22_int}
+            session["sigmas"] = o
+            # print(o)
+            return redirect(url_for('main_setup'))
+    else:
+        return redirect(url_for('main_setup'))
+    
 @app.route("/groth/setup/sigma/clear", methods=["POST"])
 def clear_sigmas():
     if request.method == "POST":
@@ -484,6 +580,7 @@ def clear_sigmas():
         session["numGates"] = None
         session["g1"] = None
         session["g2"] = None
+        session["sigmas"] = None
         return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))

@@ -128,8 +128,10 @@
                 Formula    
             </form>
         </button>
-        <button type="button" onclick="" class="btn btn-primary">
-            Calculate
+        <button type="button" onclick="calculate_sigmas()" class="btn btn-primary">
+            <form action="{{url_for("calculate_sigmas")}}" method="post" id="calculate-sigmas-form">
+                Calculate
+            </form>
         </button>
         <button type="button" onclick="clear_sigmas()" class="btn btn-primary">
             <form action="{{url_for("clear_sigmas")}}" method="post" id="clear-sigmas-form">
@@ -148,136 +150,288 @@
          [{{snl(g2[0])}}] <br>
         ]
     </p>
-    <p>
-        <table class="table table-bordered">
-            <thead>
-            <tr>
-                <th scope="col">Index</th>
-                <th scope="col">Formula</th>
-                <th scope="col">Value</th>
-            </tr>
-            </thead>
-            <tbody>
-            <!-- for 1_1 -->
-            <tr>
-                <th scope="row" rowspan="3">1_1</th>
-                <td>G1*alpha</td>
-                <td>1</td>
-            </tr>
-            <tr>
-                <td>G1*beta</td>
-                <td>2</td>
-            </tr>
-            <tr>
-                <td>G1*delta</td>
-                <td>3</td>
-            </tr>
-            
-            <!-- for 1_2 -->
-            <tr>
-                <th scope="row" rowspan="{{numGates}}">1_2</th>
-                <td rowspan="{{numGates}}">
-                  G1*{x_val^0}, <br>
-                  G1*{x_val^1}, <br>
-                  ..., <br>
-                  G1*{x_val^nGates}
-                  </td>
-                <td>1</td>
-            </tr>
-            {% for i in range(numGates-1) %}
-            <tr>
-                <td>{{i+2}}</td>
-            </tr>
-            {% endfor %}
+        {% if sigmas == None %}
+        <p>
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th scope="col">Index</th>
+                    <th scope="col">Formula</th>
+                    <th scope="col">Value</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- for 1_1 -->
+                <tr>
+                    <th scope="row" rowspan="3">1_1</th>
+                    <td>G1*alpha</td>
+                    <td>1</td>
+                </tr>
+                <tr>
+                    <td>G1*beta</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td>G1*delta</td>
+                    <td>3</td>
+                </tr>
+                
+                <!-- for 1_2 -->
+                <tr>
+                    <th scope="row" rowspan="{{numGates}}">1_2</th>
+                    <td rowspan="{{numGates}}">
+                        G1*{x_val^0}, <br>
+                        G1*{x_val^1}, <br>
+                        ..., <br>
+                        G1*{x_val^nGates}
+                        </td>
+                    <td>1</td>
+                </tr>
+                {% for i in range(numGates-1) %}
+                <tr>
+                    <td>{{i+2}}</td>
+                </tr>
+                {% endfor %}
 
-            <!-- for 1_3 -->
-            <tr>
-                <th scope="row" rowspan="{{numWires}}">1_3</th>
-                <td rowspan="{{numWires}}">
-                    G1*{beta*Ax_val[0]+alpha*Bx_val[0]+Cx_val[0]/gamma},<br>
-                    (0, 0),<br>
-                    … ,<br>
-                    (0, 0),<br>
-                    G1*{beta*Ax_val[nWires-1]+alpha*Bx_val[nWires-1]+Cx_val[nWires-1]/gamma}     
+                <!-- for 1_3 -->
+                <tr>
+                    <th scope="row" rowspan="{{numWires}}">1_3</th>
+                    <td rowspan="{{numWires}}">
+                        G1*{beta*Ax_val[0]+alpha*Bx_val[0]+Cx_val[0]/gamma},<br>
+                        (0, 0),<br>
+                        … ,<br>
+                        (0, 0),<br>
+                        G1*{beta*Ax_val[nWires-1]+alpha*Bx_val[nWires-1]+Cx_val[nWires-1]/gamma}     
+                        </td>
+                    <td>1</td>
+                </tr>
+                {% for i in range(numWires-1) %}
+                <tr>
+                    <td>{{i+2}}</td>
+                </tr>
+                {% endfor %}
+
+                <!-- for 1_4 -->
+                <tr>
+                    <th scope="row" rowspan="{{numWires}}">1_4</th>
+                    <td rowspan="{{numWires}}">
+                        (0, 0),<br>
+                        G1*{(beta*Ax_val[1]+alpha*bx_val[1]+cx_val[1])/gamma},<br>
+                        …,<br>
+                        G1*{(beta*Ax_val[nWires-2]+alpha*bx_val[nWires-2]+cx_val[nWires-2])/gamma},<br>
+                        (0, 0)             
+                        </td>
+                    <td>1</td>
+                </tr>
+                {% for i in range(numWires-1) %}
+                <tr>
+                    <td>{{i+2}}</td>
+                </tr>
+                {% endfor %}
+
+                <!-- for 1_5 -->
+                <tr>
+                    <th scope="row" rowspan="{{numGates-1}}">1_5</th>
+                    <td rowspan="{{numGates-1}}">
+                        G1 * {x_val^(0) * Zx_val / delta},<br>
+                        G1 * {x_val^(1) * Zx_val / delta},<br>
+                        … ,<br>
+                        G1 * {x_val^(nGates-2) * Zx_val / delta}                                
+                        </td>
+                    <td>1</td>
+                </tr>
+                {% for i in range(numGates-2) %}
+                <tr>
+                    <td>{{i+2}}</td>
+                </tr>
+                {% endfor %}
+                
+                <!-- for 2_1 -->
+                <tr>
+                    <th scope="row" rowspan="3">2_1</th>
+                    <td>G2*alpha</td>
+                    <td>1</td>
+                </tr>
+                <tr>
+                    <td>G2*beta</td>
+                    <td>2</td>
+                </tr>
+                <tr>
+                    <td>G2*gamma</td>
+                    <td>3</td>
+                </tr>
+
+                <!-- for 2_2 -->
+                <tr>
+                    <th scope="row" rowspan="{{numGates}}">2_2</th>
+                    <td rowspan="{{numGates}}">
+                        G2*{x_val^0}, <br>
+                        G2*{x_val^1}, <br>
+                        ..., <br>
+                        G2*{x_val^nGates}
+                        </td>
+                    <td>1</td>
+                </tr>
+                {% for i in range(numGates-1) %}
+                <tr>
+                    <td>{{i+2}}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>   
+        </p>
+        {% else %}
+        <!-- in case if sigma calculated -->
+        <p>
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th scope="col">Index</th>
+                    <th scope="col">Formula</th>
+                    <th scope="col">Value</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- for 1_1 -->
+                <tr>
+                    <th scope="row" rowspan="3">1_1</th>
+                    <td>G1*alpha</td>
+                    <td>[{{snl(sigmas["1_1"][0])}}]</td>
+                </tr>
+                <tr>
+                    <td>G1*beta</td>
+                    <td>[{{snl(sigmas["1_1"][1])}}]</td>
+                </tr>
+                <tr>
+                    <td>G1*delta</td>
+                    <td>[{{snl(sigmas["1_1"][2])}}]</td>
+                </tr>
+                
+                <!-- for 1_2 -->
+                <tr>
+                    <th scope="row" rowspan="{{numGates}}">1_2</th>
+                    <td rowspan="{{numGates}}">
+                        G1*{x_val^0}, <br>
+                        G1*{x_val^1}, <br>
+                        ..., <br>
+                        G1*{x_val^nGates}
+                        </td>
+                    <td>[{{snl(sigmas["1_2"][0])}}]</td>
+                </tr>
+                {% for i in range(numGates-1) %}
+                <tr>
+                    <td>[{{snl(sigmas["1_2"][i+1])}}]</td>
+                </tr>
+                {% endfor %}
+
+                <!-- for 1_3 -->
+                <tr>
+                    <th scope="row" rowspan="{{numWires}}">1_3</th>
+                    <td rowspan="{{numWires}}">
+                        G1*{beta*Ax_val[0]+alpha*Bx_val[0]+Cx_val[0]/gamma},<br>
+                        (0, 0),<br>
+                        … ,<br>
+                        (0, 0),<br>
+                        G1*{beta*Ax_val[nWires-1]+alpha*Bx_val[nWires-1]+Cx_val[nWires-1]/gamma}     
+                        </td>
+                    <td>[{{snl(sigmas["1_3"][0])}}]</td>
+                </tr>
+                {% for i in range(numWires-1) %}
+                <tr>
+                    <td>[{{snl(sigmas["1_3"][i+1])}}]</td>
+                </tr>
+                {% endfor %}
+
+                <!-- for 1_4 -->
+                <tr>
+                    <th scope="row" rowspan="{{numWires}}">1_4</th>
+                    <td rowspan="{{numWires}}">
+                        (0, 0),<br>
+                        G1*{(beta*Ax_val[1]+alpha*bx_val[1]+cx_val[1])/gamma},<br>
+                        …,<br>
+                        G1*{(beta*Ax_val[nWires-2]+alpha*bx_val[nWires-2]+cx_val[nWires-2])/gamma},<br>
+                        (0, 0)             
+                        </td>
+                    <td>[{{snl(sigmas["1_4"][0])}}]</td>
+                </tr>
+                {% for i in range(numWires-1) %}
+                <tr>
+                    <td>[{{snl(sigmas["1_4"][i+1])}}]</td>
+                </tr>
+                {% endfor %}
+
+                <!-- for 1_5 -->
+                <tr>
+                    <th scope="row" rowspan="{{numGates-1}}">1_5</th>
+                    <td rowspan="{{numGates-1}}">
+                        G1 * {x_val^(0) * Zx_val / delta},<br>
+                        G1 * {x_val^(1) * Zx_val / delta},<br>
+                        … ,<br>
+                        G1 * {x_val^(nGates-2) * Zx_val / delta}                                
+                        </td>
+                    <td>[{{snl(sigmas["1_5"][0])}}]</td>
+                </tr>
+                {% for i in range(numGates-2) %}
+                <tr>
+                    <td>[{{snl(sigmas["1_5"][i+1])}}]</td>
+                </tr>
+                {% endfor %}
+                
+                <!-- for 2_1 -->
+                <tr>
+                    <th scope="row" rowspan="3">2_1</th>
+                    <td>G2*alpha</td>
+                    <td>
+                        {% for point in sigmas["2_1"][0] %}
+                        [{{snl(point)}}]
+                        {% endfor %}
                     </td>
-                <td>1</td>
-            </tr>
-            {% for i in range(numWires-1) %}
-            <tr>
-                <td>{{i+2}}</td>
-            </tr>
-            {% endfor %}
-
-            <!-- for 1_4 -->
-            <tr>
-                <th scope="row" rowspan="{{numWires}}">1_4</th>
-                <td rowspan="{{numWires}}">
-                    (0, 0),<br>
-                    G1*{(beta*Ax_val[1]+alpha*bx_val[1]+cx_val[1])/gamma},<br>
-                    …,<br>
-                    G1*{(beta*Ax_val[nWires-2]+alpha*bx_val[nWires-2]+cx_val[nWires-2])/gamma},<br>
-                    (0, 0)             
+                </tr>
+                <tr>
+                    <td>G2*beta</td>
+                    <td>
+                        {% for point in sigmas["2_1"][1] %}
+                        [{{snl(point)}}]
+                        {% endfor %}
                     </td>
-                <td>1</td>
-            </tr>
-            {% for i in range(numWires-1) %}
-            <tr>
-                <td>{{i+2}}</td>
-            </tr>
-            {% endfor %}
-
-            <!-- for 1_5 -->
-            <tr>
-                <th scope="row" rowspan="{{numGates-1}}">1_5</th>
-                <td rowspan="{{numGates-1}}">
-                    G1 * {x_val^(0) * Zx_val / delta},<br>
-                    G1 * {x_val^(1) * Zx_val / delta},<br>
-                    … ,<br>
-                    G1 * {x_val^(nGates-2) * Zx_val / delta}                                
+                </tr>
+                <tr>
+                    <td>G2*gamma</td>
+                    <td>
+                        {% for point in sigmas["2_1"][2] %}
+                        [{{snl(point)}}]
+                        {% endfor %}
                     </td>
-                <td>1</td>
-            </tr>
-            {% for i in range(numGates-2) %}
-            <tr>
-                <td>{{i+2}}</td>
-            </tr>
-            {% endfor %}
-            
-            <!-- for 2_1 -->
-            <tr>
-                <th scope="row" rowspan="3">2_1</th>
-                <td>G2*alpha</td>
-                <td>1</td>
-            </tr>
-            <tr>
-                <td>G2*beta</td>
-                <td>2</td>
-            </tr>
-            <tr>
-                <td>G2*gamma</td>
-                <td>3</td>
-            </tr>
+                </tr>
 
-            <!-- for 2_2 -->
-            <tr>
-                <th scope="row" rowspan="{{numGates}}">2_2</th>
-                <td rowspan="{{numGates}}">
-                  G2*{x_val^0}, <br>
-                  G2*{x_val^1}, <br>
-                  ..., <br>
-                  G2*{x_val^nGates}
-                  </td>
-                <td>1</td>
-            </tr>
-            {% for i in range(numGates-1) %}
-            <tr>
-                <td>{{i+2}}</td>
-            </tr>
-            {% endfor %}
-
-            </tbody>
-        </table>   
-    </p>
+                <!-- for 2_2 -->
+                <tr>
+                    <th scope="row" rowspan="{{numGates}}">2_2</th>
+                    <td rowspan="{{numGates}}">
+                        G2*{x_val^0}, <br>
+                        G2*{x_val^1}, <br>
+                        ..., <br>
+                        G2*{x_val^nGates}
+                        </td>
+                    <td>
+                        {% for point in sigmas["2_2"][0] %}
+                        [{{snl(point)}}]
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% for i in range(numGates-1) %}
+                <tr>
+                    <td>
+                        {% for point in sigmas["2_2"][i+1] %}
+                        [{{snl(point)}}]
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>   
+        </p>
+        {% endif%}
     {% endif %}
 </section>
 {% endblock %}
