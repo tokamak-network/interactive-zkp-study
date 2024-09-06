@@ -343,10 +343,7 @@ def test_proving_and_verifying(pub_r_indexs=None):
         C = C0 * (C1111213 + C2) + C3
 
         lhs = A*B 
-
-        #TODO : arb public / private
-        # rpub = [Rx[0], Rx[-1]]
-        # valpub = [VAL[0], VAL[-1]]
+        
         rpub = [Rx[i] for i in pub_r_indexs]
         valpub = [VAL[i] for i in pub_r_indexs]
 

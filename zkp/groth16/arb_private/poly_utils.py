@@ -123,4 +123,3 @@ def hxr(Ax, Bx, Cx, Zx, R):
     Hx = q
 
     return Hx, r
-
