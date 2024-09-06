@@ -51,17 +51,13 @@ pairing = bn128.pairing
 add = bn128.add
 neg = bn128.neg
 
+#(rx_pub) = [(index_i, ri), ... ]
 def verify(prf_A, proof_B, proof_C, sigma1_1, sigma1_3, sigma2_1, rx_pub):
-    
-    pub_r_indexs = [i for i, ri in rx_pub]
 
     LHS = pairing(proof_B, prf_A)
     RHS = pairing(sigma2_1[0], sigma1_1[0])
 
     temp = None
-
-    # for i in pub_r_indexs:
-    #     temp = add(temp, mult(sigma1_3[i], int(Rx[i])))
 
     for i, ri in rx_pub:
         temp = add(temp, mult(sigma1_3[i], int(ri)))

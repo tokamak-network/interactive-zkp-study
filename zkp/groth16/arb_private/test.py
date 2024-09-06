@@ -234,7 +234,6 @@ def test_setup(pub_r_indexs=None):
 
     #TEST1 : r should be zero
     t1 = (reduce((lambda x, y : x*y), r) == 0)
-    # print("r : {}".format(r))
 
     lhs = _multiply_vec_vec(Rx, Ax_val) * _multiply_vec_vec(Rx, Bx_val) - _multiply_vec_vec(Rx, Cx_val)
     rhs = Zx_val * Hx_val
@@ -242,8 +241,8 @@ def test_setup(pub_r_indexs=None):
     #TEST2 : lhs == rhs
     t2 = (lhs == rhs)
 
-    print("TEST1 {}".format(t1))
-    print("TEST2 {}".format(t2))
+    print("TEST1 : r should be 0 => {}".format(t1))
+    print("TEST2 : lhs == rhs => {}".format(t2))
     
     sigmas = [s11, s12, s13, s14, s15, s21, s22]
     sol_polys = [Ax_val, Bx_val, Cx_val, Hx_val, Zx_val]
