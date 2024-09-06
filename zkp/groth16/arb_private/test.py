@@ -46,7 +46,8 @@ from setup import (
 from proving import (
     proof_a,
     proof_b,
-    proof_c
+    proof_c,
+    build_rpub_enum
 )
 
 from verifying import verify
@@ -273,7 +274,7 @@ def test_proving_and_verifying(pub_r_indexs=None):
     numGates = out["numGatesWires"][0]
 
     if pub_r_indexs == None:
-        pub_r_indexs = [0, numWires-1] 
+        pub_r_indexs = [0, 1] 
 
     Ax = polys[0]
     Bx = polys[1]
@@ -343,7 +344,7 @@ def test_proving_and_verifying(pub_r_indexs=None):
         C = C0 * (C1111213 + C2) + C3
 
         lhs = A*B 
-        
+
         rpub = [Rx[i] for i in pub_r_indexs]
         valpub = [VAL[i] for i in pub_r_indexs]
 
@@ -361,7 +362,11 @@ def test_proving_and_verifying(pub_r_indexs=None):
 
     ##verifying##
 
-    very_result = verify(numWires, proof_A, proof_B, proof_C, sigma1_1, sigma1_3, sigma2_1, Rx, pub_r_indexs)
+    rpub_enum = build_rpub_enum(pub_r_indexs, Rx)
+    # print("Rx : {}".format(Rx))
+    # print("rpub_enum : {}".format(rpub_enum))
+
+    very_result = verify(proof_A, proof_B, proof_C, sigma1_1, sigma1_3, sigma2_1, rpub_enum)
 
     print("Verifying ? : {}".format(very_result))
 
@@ -371,6 +376,8 @@ if __name__ == "__main__":
     # test_code_to_r1cs()
     # test_r1cs_qap_lcm()
     # test_setup()
-    # test_proving_and_verifying()
 
+    # test_proving_and_verifying()
     test_proving_and_verifying([0,1])
+    test_proving_and_verifying([0,2])
+    test_proving_and_verifying([0,1,2])

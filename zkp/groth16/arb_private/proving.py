@@ -75,13 +75,13 @@ def proof_b(sigma2_1, sigma2_2, Bx, Rx, s):
 
 def proof_c(sigma1_1, sigma1_2, sigma1_4, sigma1_5, Bx, Rx, Hx, s, r, prf_A, pub_r_indexs=None):
 
+    if pub_r_indexs == None:
+        pub_r_indexs = [0, 1]
+    
     numGates = getNumGates(Bx)
     numWires = getNumWires(Bx)
-
-    if pub_r_indexs == None:
-        pub_r_indexs = [0, numWires-1]
-
     #Build temp_proof_B
+    #TODO : arb should be applied
     temp_proof_B = sigma1_1[1]
     for i in range(numWires):
         temp = pointInf1
@@ -95,11 +95,17 @@ def proof_c(sigma1_1, sigma1_2, sigma1_4, sigma1_5, Bx, Rx, Hx, s, r, prf_A, pub
 
     for i in range(numWires):
         if i in pub_r_indexs:
+            # print("proof_c i {}".format(i))
             continue
-        else:
-            proof_C = add(proof_C, mult(sigma1_4[i], int(Rx[i])))
+        proof_C = add(proof_C, mult(sigma1_4[i], int(Rx[i])))
 
     for i in range(numGates-1):
         proof_C = add(proof_C, mult(sigma1_5[i], int(Hx[i])))
 
     return proof_C
+
+def build_rpub_enum(pub_r_indexs, r_vec):
+    o = []
+    for i in pub_r_indexs:
+        o.append((i, r_vec[i]))
+    return o

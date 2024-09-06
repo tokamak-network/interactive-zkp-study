@@ -43,12 +43,13 @@ def sigma12(numGates, x_val):
     return sigma1_2
 
 def sigma13(numWires, alpha, beta, gamma, Ax_val, Bx_val, Cx_val, pub_r_indexs=None):
-    if pub_r_indexs == None:
-        pub_r_indexs = [0, numWires-1]
 
-    print("in sig13 func : {}".format(pub_r_indexs))
+    if pub_r_indexs == None:
+        pub_r_indexs = [0, 1]
+
     sigma1_3 = []
     VAL = [FR(0)]*numWires
+    print("sigma13 pub_r_indexs = {}".format(pub_r_indexs))
     for i in range(numWires):
         if i in pub_r_indexs:
             val = (beta*Ax_val[i] + alpha*Bx_val[i] + Cx_val[i]) / gamma
@@ -59,10 +60,10 @@ def sigma13(numWires, alpha, beta, gamma, Ax_val, Bx_val, Cx_val, pub_r_indexs=N
     return sigma1_3, VAL
 
 def sigma14(numWires, alpha, beta, delta, Ax_val, Bx_val, Cx_val, pub_r_indexs=None):
-    if pub_r_indexs == None:
-        pub_r_indexs = [0, numWires-1]
 
-    print("in sig14 func : {}".format(pub_r_indexs))
+    if pub_r_indexs == None:
+        pub_r_indexs = [0, 1]
+
     sigma1_4 = []
     for i in range(numWires):
         if i in pub_r_indexs:
