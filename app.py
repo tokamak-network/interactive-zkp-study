@@ -389,6 +389,7 @@ def clear_toxic():
 def get_polys():
     if request.method == "POST":
         user_code = session.get("code")
+        print(user_code)
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
@@ -399,6 +400,7 @@ def get_polys():
             Bx = [ [int(FR(int(n))) for n in vec] for vec in Bp ]
             Cx = [ [int(FR(int(n))) for n in vec] for vec in Cp ]
             Zx = [ int(FR(int(num))) for num in Z ]
+            print(Ax)
 
             o = {"Ap": Ax, "Bp": Bx, "Cp":Cx, "Zp":Zx}
             session["polys"] = o
