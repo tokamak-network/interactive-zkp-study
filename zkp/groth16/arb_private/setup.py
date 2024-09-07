@@ -1,26 +1,6 @@
 from py_ecc.fields import bn128_FQ as FQ
 from py_ecc import bn128
 
-from poly_utils import (
-    # _multiply_polys,
-    # _add_polys,
-    # _subtract_polys,
-    # _div_polys,
-    # _eval_poly,
-    # _multiply_vec_matrix,
-    _multiply_vec_vec,
-    getNumWires,
-    getNumGates,
-    getFRPoly1D,
-    getFRPoly2D,
-    ax_val,
-    bx_val,
-    cx_val,
-    zx_val,
-    hxr,
-    hx_val
-)
-
 g1 = bn128.G1
 g2 = bn128.G2
 

@@ -4,7 +4,7 @@
 # from zkp.groth16.determinant import determinant_fast
 from determinant import determinant_fast
 
-det4 = 12.0
+# det4 = 12.0
 # how it is calculated?
 # This is determinat of (x-1)(x-2)(x-3)(x-4) ?, k=4
 

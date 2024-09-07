@@ -2,33 +2,8 @@ from py_ecc.fields import bn128_FQ as FQ
 from py_ecc import bn128
 
 from poly_utils import (
-    # _multiply_polys,
-    _add_polys,
-    # _subtract_polys,
-    # _div_polys,
-    # _eval_poly,
-    # _multiply_vec_matrix,
-    _multiply_vec_vec,
     getNumWires,
-    getNumGates,
-    getFRPoly1D,
-    getFRPoly2D,
-    ax_val,
-    bx_val,
-    cx_val,
-    zx_val,
-    hxr,
-    hx_val
-)
-
-from setup import (
-    sigma11,
-    sigma12,
-    sigma13,
-    sigma14,
-    sigma15,
-    sigma21,
-    sigma22
+    getNumGates
 )
 
 g1 = bn128.G1
@@ -44,10 +19,6 @@ pointInf2 = mult(g2, bn128.curve_order) # None
 
 class FR(FQ):
     field_modulus = bn128.curve_order
-
-# EXAMPLE r, s
-# r = FR(4106)
-# s = FR(4565)
 
 def proof_a(sigma1_1, sigma1_2, Ax, Rx, r):
     numGates = getNumGates(Ax)
@@ -81,7 +52,6 @@ def proof_c(sigma1_1, sigma1_2, sigma1_4, sigma1_5, Bx, Rx, Hx, s, r, prf_A, pub
     numGates = getNumGates(Bx)
     numWires = getNumWires(Bx)
     #Build temp_proof_B
-    #TODO : arb should be applied
     temp_proof_B = sigma1_1[1]
     for i in range(numWires):
         temp = pointInf1
