@@ -548,6 +548,7 @@ def calculate_sigmas():
     if request.method == "POST":
         user_code = session.get("code")
         toxic = session.get("toxic")
+        public_gates = session.get("public_gates")
         if user_code:
             
             if toxic == None:
@@ -580,8 +581,8 @@ def calculate_sigmas():
 
             s11 = sigma11(alpha, beta, delta)
             s12 = sigma12(numGates, x_val)
-            s13, VAL = sigma13(numWires, alpha, beta, gamma, Ax_val, Bx_val, Cx_val)
-            s14 = sigma14(numWires, alpha, beta, delta, Ax_val, Bx_val, Cx_val)
+            s13, VAL = sigma13(numWires, alpha, beta, gamma, Ax_val, Bx_val, Cx_val, public_gates)
+            s14 = sigma14(numWires, alpha, beta, delta, Ax_val, Bx_val, Cx_val, public_gates)
             s15 = sigma15(numGates, delta, x_val, Zx_val)
             s21 = sigma21(beta, delta, gamma)
             s22 = sigma22(numGates, x_val)

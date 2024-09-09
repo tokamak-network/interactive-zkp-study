@@ -144,7 +144,7 @@
             {% endfor %} 
         </p>
     {% elif gates %}
-        <p>Wich variables you would like to make it as <b>publc</b> gate? - checked values will be opened to verifier</p>
+        <p>Wich variables(gates) you would like to make it as <b>public</b> - checked values will be opened to verifier</p>
         <p>
             <form action="{{url_for("set_public_gates")}}" method="post" id="set-pubic-gates-form">
                 <div class="form-check">
@@ -173,6 +173,7 @@
 
 <section>
     <h4>4.Sigmas = proving key?</h4>
+    {% if public_gates %}
     <p>
         <button type="button" onclick="get_formula()" class="btn btn-primary">
             <form action="{{url_for("sigma_formula")}}" method="post" id="get-formula-form">
@@ -190,7 +191,11 @@
             </form>
         </button>   
     </p>
+    {% else %}
+    {% endif %}
+
     {% if numWires == None %}
+    {% elif public_gates == None %}
     {% else %}
     <p>
         nWires = {{numWires}}<br>
@@ -248,11 +253,13 @@
                 <tr>
                     <th scope="row" rowspan="{{numWires}}">1_3</th>
                     <td rowspan="{{numWires}}">
-                        G1*{beta*Ax_val[0]+alpha*Bx_val[0]+Cx_val[0]/gamma},<br>
-                        (0, 0),<br>
-                        … ,<br>
-                        (0, 0),<br>
-                        G1*{beta*Ax_val[nWires-1]+alpha*Bx_val[nWires-1]+Cx_val[nWires-1]/gamma}     
+                        {% for numw in range(numWires) %}
+                            {% if numw in public_gates %}
+                                G1*{beta*Ax_val[{{numw}}]+alpha*Bx_val[{{numw}}]+Cx_val[{{numw}}]/gamma},<br>
+                            {% else %}
+                                (0, 0), <br>
+                            {% endif %}
+                        {% endfor %}
                         </td>
                     <td>1</td>
                 </tr>
@@ -266,11 +273,13 @@
                 <tr>
                     <th scope="row" rowspan="{{numWires}}">1_4</th>
                     <td rowspan="{{numWires}}">
-                        (0, 0),<br>
-                        G1*{(beta*Ax_val[1]+alpha*bx_val[1]+cx_val[1])/gamma},<br>
-                        …,<br>
-                        G1*{(beta*Ax_val[nWires-2]+alpha*bx_val[nWires-2]+cx_val[nWires-2])/gamma},<br>
-                        (0, 0)             
+                        {% for numw in range(numWires) %}
+                            {% if numw in public_gates %}
+                                (0, 0), <br>
+                            {% else %}
+                                G1*{(beta*Ax_val[{{numw}}]+alpha*bx_val[{{numw}}]+cx_val[{{numw}}])/gamma},<br>
+                            {% endif %}
+                        {% endfor %}           
                         </td>
                     <td>1</td>
                 </tr>
@@ -379,11 +388,14 @@
                 <tr>
                     <th scope="row" rowspan="{{numWires}}">1_3</th>
                     <td rowspan="{{numWires}}">
-                        G1*{beta*Ax_val[0]+alpha*Bx_val[0]+Cx_val[0]/gamma},<br>
-                        (0, 0),<br>
-                        … ,<br>
-                        (0, 0),<br>
-                        G1*{beta*Ax_val[nWires-1]+alpha*Bx_val[nWires-1]+Cx_val[nWires-1]/gamma}     
+                        {% for numw in range(numWires) %}
+                            {% if numw in public_gates %}
+                                
+                                G1*{beta*Ax_val[{{numw}}]+alpha*Bx_val[{{numw}}]+Cx_val[{{numw}}]/gamma},<br>
+                            {% else %}
+                                (0, 0), <br>
+                            {% endif %}
+                        {% endfor %}   
                         </td>
                     <td>[{{snl(sigmas["1_3"][0])}}]</td>
                 </tr>
@@ -397,11 +409,13 @@
                 <tr>
                     <th scope="row" rowspan="{{numWires}}">1_4</th>
                     <td rowspan="{{numWires}}">
-                        (0, 0),<br>
-                        G1*{(beta*Ax_val[1]+alpha*bx_val[1]+cx_val[1])/gamma},<br>
-                        …,<br>
-                        G1*{(beta*Ax_val[nWires-2]+alpha*bx_val[nWires-2]+cx_val[nWires-2])/gamma},<br>
-                        (0, 0)             
+                        {% for numw in range(numWires) %}
+                            {% if numw in public_gates %}
+                                (0, 0), <br>
+                            {% else %}
+                                G1*{(beta*Ax_val[{{numw}}]+alpha*bx_val[{{numw}}]+cx_val[{{numw}}])/gamma},<br>
+                            {% endif %}
+                        {% endfor %}            
                         </td>
                     <td>[{{snl(sigmas["1_4"][0])}}]</td>
                 </tr>
