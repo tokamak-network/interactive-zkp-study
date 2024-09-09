@@ -382,6 +382,10 @@ def clear_toxic():
         session["numGates"] = None
         session["g1"] = None
         session["g2"] = None
+
+        session["gates"] = None
+        session["public_gates"] = None
+        session["sigmas"] = None
         # session["sigmas"] = None
         return redirect(url_for('main_setup'))
     else:
@@ -423,6 +427,7 @@ def set_public_gates():
 def reset_public_gates():
     if request.method == "POST":
         session["public_gates"] = None
+        session["sigmas"] = None #sigmas also have to be recalculated
         return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
@@ -636,13 +641,51 @@ def clear_sigmas():
         session["g1"] = None
         session["g2"] = None
         session["sigmas"] = None
+
         return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
 
+#### PROVING ####
+
 @app.route("/groth/proving")
 def main_proving():
-    return render_template("groth16/proving.html")
+    p_random = session.get("prover_random")
+    return render_template("groth16/proving.html", p_random=p_random)
+
+# @app.route("/groth/proving/random/save", methods=["POST"])
+# def save_prover_random():
+#     if request.method == "POST":
+#         user_code = session.get("code")
+#         if user_code:
+#             return redirect(url_for('main_proving'))
+#     else:
+#         return redirect(url_for('main_proving'))
+
+@app.route("/groth/proving/random/save", methods=["POST"])
+def save_prover_random():
+    if request.method == "POST":
+        user_code = session.get("code")
+        if user_code:
+            random_r = request.form['prover-random-r']
+            random_s = request.form['prover-random-s']
+            session["prover_random"] = {"r" : int(random_r), "s" : int(random_s)}
+            return redirect(url_for('main_proving'))
+    else:
+        return redirect(url_for('main_proving'))
+    
+@app.route("/groth/proving/random/clear", methods=["POST"])
+def clear_prover_random():
+    if request.method == "POST":
+        user_code = session.get("code")
+        if user_code:
+            session["prover_random"] = None
+            print("prover random cleared")
+            return redirect(url_for('main_proving'))
+    else:
+        return redirect(url_for('main_proving'))
+    
+#### VERIFYING ####
 
 @app.route("/groth/verifying")
 def main_verifying():

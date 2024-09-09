@@ -147,3 +147,37 @@ async function set_public_gates(){
 async function reset_public_gates(){
     document.getElementById('reset-pubic-gates-form').submit();
 }
+
+async function generate_prover_random(){
+    let maxValue = 999999999999;
+
+    let r_val = Math.floor(Math.random() * maxValue);
+    let s_val = Math.floor(Math.random() * maxValue);
+    
+    let r_element = document.getElementsByName('prover-random-r')[0]
+    let s_element = document.getElementsByName('prover-random-s')[0]
+
+    r_element.value = r_val;
+    s_element.value = s_val;
+}
+
+async function save_prover_random(){
+    document.getElementById('prover-random-form').submit();
+}
+
+async function prover_random_clear(){
+    let r_element = document.getElementsByName('prover-random-r')[0]
+    let s_element = document.getElementsByName('prover-random-s')[0]
+
+    r_element.value = null;
+    s_element.value = null;
+
+    r_element.setAttribute('placeholder', 'r');
+    s_element.setAttribute('placeholder', 's');
+    
+    clear_p_random_session();
+}
+
+async function clear_p_random_session(){
+    document.getElementById('prover-random-clear-form').submit();
+}

@@ -3,23 +3,31 @@
 {% block content_in %}
 <h2>Proving</h2>
 <section>
-    <h4>1. Set Random r, s</h4>
+    <h4>1. Choose prover's random values</h4>
     <p>
-        <button type="button" onclick="" class="btn btn-primary">random</button>
-        <button type="button" onclick="" class="btn btn-primary">save</button>
+        <button type="button" onclick="generate_prover_random()" class="btn btn-primary">Random</button>
+        <button type="button" onclick="save_prover_random()" class="btn btn-primary">Save</button>
+        <button type="button" onclick="prover_random_clear()" class="btn btn-primary">
+            <form action="{{url_for("clear_prover_random")}}" method="post" id="prover-random-clear-form">
+                Clear
+            </form>
+        </button>
     </p>
     <p>
-        <form action="" method="post" id="save-toxic-form">
+        <form action="{{url_for("save_prover_random")}}" method="post" id="prover-random-form">
             <div class="row">
                 <div class="col">
-                    <input type="number" class="form-proving-r" name="toxic-alpha" placeholder="r">
+                    <input type="number" class="form-proving-r" name="prover-random-r" placeholder="r">
                 </div>
                 <div class="col">
-                    <input type="number" class="form-proving-s" name="toxic-beta" placeholder="s">
+                    <input type="number" class="form-proving-s" name="prover-random-s" placeholder="s">
                 </div>
             </div>
         </form>
-        {'r' : 1234, 's' : 1234}
+        {% if p_random %}
+        {{p_random}}
+        {% else %}
+        {% endif %}
     </p>
 </section>
 <section>
@@ -27,7 +35,7 @@
     <p>
         <button type="button" onclick="put_values()" class="btn btn-primary">
             <form action="" method="post" id="put-values-form">
-                Put inputs
+                Load
             </form>
         </button>
     </p>

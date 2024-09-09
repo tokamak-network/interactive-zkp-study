@@ -172,26 +172,27 @@
 </section>
 
 <section>
-    <h4>4.Sigmas = proving key?</h4>
-    {% if public_gates %}
-    <p>
-        <button type="button" onclick="get_formula()" class="btn btn-primary">
-            <form action="{{url_for("sigma_formula")}}" method="post" id="get-formula-form">
-                Formula    
-            </form>
-        </button>
-        <button type="button" onclick="calculate_sigmas()" class="btn btn-primary">
-            <form action="{{url_for("calculate_sigmas")}}" method="post" id="calculate-sigmas-form">
-                Calculate
-            </form>
-        </button>
-        <button type="button" onclick="clear_sigmas()" class="btn btn-primary">
-            <form action="{{url_for("clear_sigmas")}}" method="post" id="clear-sigmas-form">
-                Clear
-            </form>
-        </button>   
-    </p>
+    <h4>4.Sigma(= proving key) generation</h4>
+    {% if public_gates == None %}
+    {% elif toxic == None %}
     {% else %}
+        <p>
+            <button type="button" onclick="get_formula()" class="btn btn-primary">
+                <form action="{{url_for("sigma_formula")}}" method="post" id="get-formula-form">
+                    Formula    
+                </form>
+            </button>
+            <button type="button" onclick="calculate_sigmas()" class="btn btn-primary">
+                <form action="{{url_for("calculate_sigmas")}}" method="post" id="calculate-sigmas-form">
+                    Calculate
+                </form>
+            </button>
+            <button type="button" onclick="clear_sigmas()" class="btn btn-primary">
+                <form action="{{url_for("clear_sigmas")}}" method="post" id="clear-sigmas-form">
+                    Clear
+                </form>
+            </button>   
+        </p>
     {% endif %}
 
     {% if numWires == None %}
