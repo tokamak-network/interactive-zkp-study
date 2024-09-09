@@ -135,3 +135,15 @@ async function get_formula(){
 async function calculate_sigmas(){
     document.getElementById('calculate-sigmas-form').submit();
 }
+
+async function load_gates(){
+    document.getElementById('load-gates-form').submit();
+}
+
+async function set_public_gates(){
+    document.getElementById('set-pubic-gates-form').submit();
+}
+
+async function reset_public_gates(){
+    document.getElementById('reset-pubic-gates-form').submit();
+}

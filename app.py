@@ -214,6 +214,7 @@ def abc_matrix():
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
             A, B, C = flatcode_to_r1cs(inputs, flatcode)
+            initialize_symbol()
             session["abc"] = {"A": A, "B": B, "C": C}
 
             return redirect(url_for('main'))
@@ -249,7 +250,7 @@ def calculate_r():
             user_inputs = []
             for d in form_data:
                 user_inputs.append(int(form_data[d]))
-            print(user_inputs)
+            # print(user_inputs)
             session['user_inputs'] = form_data
             
             # todo : calculate r vector
@@ -257,6 +258,7 @@ def calculate_r():
             flatcode = flatten_body(body)
 
             r = assign_variables(inputs, user_inputs, flatcode)
+            initialize_symbol()
             session['r_values'] = r
 
             return redirect(url_for('main'))
@@ -273,6 +275,7 @@ def create_qap():
             A, B, C = flatcode_to_r1cs(inputs, flatcode)
 
             Ap, Bp, Cp, Z = r1cs_to_qap(A, B, C)
+            initialize_symbol()
 
             session["qap"] = {"Ap" : Ap, "Bp":Bp, "Cp": Cp, "Z":Z}
 
@@ -290,6 +293,7 @@ def create_qap_lcm():
             A, B, C = flatcode_to_r1cs(inputs, flatcode)
 
             Ap, Bp, Cp, Z = r1cs_to_qap_times_lcm(A, B, C)
+            initialize_symbol()
 
             session["qap_lcm"] = {"Ap" : Ap, "Bp":Bp, "Cp": Cp, "Z":Z}
 
@@ -307,6 +311,7 @@ def create_qap_fr():
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
             A, B, C = flatcode_to_r1cs(inputs, flatcode)
+            initialize_symbol()
             Ap, Bp, Cp, Z = r1cs_to_qap_times_lcm(A, B, C)
 
             #FR object must be converted to int
@@ -336,6 +341,8 @@ def main_setup():
     g1 = session.get("g1")
     g2 = session.get("g2")
     sigmas = session.get("sigmas")
+    gates = session.get("gates")
+    public_gates = session.get("public_gates")
     
     return render_template("groth16/setup.html", \
                            toxic = toxic, \
@@ -345,7 +352,9 @@ def main_setup():
                            numGates = numGates, \
                            g1 = g1, \
                            g2 = g2, \
-                           sigmas = sigmas \
+                           sigmas = sigmas, \
+                           gates = gates, \
+                           public_gates = public_gates \
                            )
 
 @app.route("/groth/setup/toxic/save", methods=["POST"])
@@ -378,6 +387,46 @@ def clear_toxic():
     else:
         return redirect(url_for('main_setup'))
     
+@app.route("/groth/setup/gates", methods=["POST"])
+def load_gates():
+    if request.method == "POST":
+        user_code = session.get("code")
+        if user_code:
+            inputs, body = extract_inputs_and_body(parse(user_code))
+            flatcode = flatten_body(body)
+            variables = get_var_placement(inputs, flatcode)
+            initialize_symbol()
+            session["gates"] = variables
+            return redirect(url_for('main_setup'))
+    else:
+        return redirect(url_for('main_setup'))
+    
+@app.route("/groth/setup/gates/set", methods=["POST"])
+def set_public_gates():
+    if request.method == "POST":
+        gates = session.get("gates")
+        print(gates)
+        if gates:
+            print("gates in")
+            target = [0]
+            for i in range(len(gates)-1):
+                check = request.form.get("form-check-input-"+str(i+1))
+                if check != None:
+                    target.append(i+1)
+            session["public_gates"] = target
+            # print(target)
+            return redirect(url_for('main_setup'))
+    else:
+        return redirect(url_for('main_setup'))
+    
+@app.route("/groth/setup/gates/reset", methods=["POST"])
+def reset_public_gates():
+    if request.method == "POST":
+        session["public_gates"] = None
+        return redirect(url_for('main_setup'))
+    else:
+        return redirect(url_for('main_setup'))
+    
 # @app.route("/groth/setup/polys", methods=["POST"])
 # def clear_toxic():
 #     if request.method == "POST":
@@ -389,18 +438,18 @@ def clear_toxic():
 def get_polys():
     if request.method == "POST":
         user_code = session.get("code")
-        print(user_code)
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
             A, B, C = flatcode_to_r1cs(inputs, flatcode)
             Ap, Bp, Cp, Z = r1cs_to_qap_times_lcm(A, B, C)
+            initialize_symbol()
 
             Ax = [ [int(FR(int(n))) for n in vec] for vec in Ap ]
             Bx = [ [int(FR(int(n))) for n in vec] for vec in Bp ]
             Cx = [ [int(FR(int(n))) for n in vec] for vec in Cp ]
             Zx = [ int(FR(int(num))) for num in Z ]
-            print(Ax)
+            # print(Ax)
 
             o = {"Ap": Ax, "Bp": Bx, "Cp":Cx, "Zp":Zx}
             session["polys"] = o
@@ -423,6 +472,7 @@ def get_polys_evaluated():
             flatcode = flatten_body(body)
             A, B, C = flatcode_to_r1cs(inputs, flatcode)
             Ap, Bp, Cp, Z = r1cs_to_qap_times_lcm(A, B, C)
+            initialize_symbol()
 
             Ax = getFRPoly2D(Ap)
             Bx = getFRPoly2D(Bp)
@@ -465,6 +515,7 @@ def sigma_formula():
             flatcode = flatten_body(body)
             A, B, C = flatcode_to_r1cs(inputs, flatcode)
             Ap, Bp, Cp, Z = r1cs_to_qap_times_lcm(A, B, C)
+            initialize_symbol()
 
             numWires = getNumWires(Ap)
             numGates = getNumGates(Ap)
@@ -506,6 +557,7 @@ def calculate_sigmas():
             flatcode = flatten_body(body)
             A, B, C = flatcode_to_r1cs(inputs, flatcode)
             Ap, Bp, Cp, Z = r1cs_to_qap_times_lcm(A, B, C)
+            initialize_symbol()
 
             Ax = getFRPoly2D(Ap)
             Bx = getFRPoly2D(Bp)

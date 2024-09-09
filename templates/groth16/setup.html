@@ -117,11 +117,62 @@
             ]
         </p>
     {% endif %}
+</section>
+
+<section>
+    <h4>3. public gates(r) setting</h4>
+    <p>
+        <button type="button" onclick="load_gates()" class="btn btn-primary">
+            <form action="{{url_for("load_gates")}}" method="post" id="load-gates-form">
+                Load
+            </form>
+        </button>
+        <button type="button" onclick="set_public_gates()" class="btn btn-primary">Save</button>
+        <button type="button" onclick="reset_public_gates()" class="btn btn-primary">
+            <form action="{{url_for('reset_public_gates')}}" method="post" id="reset-pubic-gates-form">
+                Reset
+            </form>
+        </button>
+    </p>
+    
+    
+    {% if public_gates %}
+        <p>
+            Saved Public Gates >>> <br>
+            {% for num in public_gates %}
+                {{num}} : {{gates[num]}} <br>
+            {% endfor %} 
+        </p>
+    {% elif gates %}
+        <p>Wich variables you would like to make it as <b>publc</b> gate? - checked values will be opened to verifier</p>
+        <p>
+            <form action="{{url_for("set_public_gates")}}" method="post" id="set-pubic-gates-form">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="flexCheckChecked" name="form-check-input-0" checked disabled>
+                    <label class="form-check-label" for="flexCheckChecked">
+                    0 : ~one
+                    </label>
+                </div>
+
+                {% for gate in gates[1:] %}
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" name="form-check-input-{{loop.index}}">
+                    <label class="form-check-label" for="flexCheckDefault">
+                        {{loop.index}} : {{gate}}
+                    </label>
+                </div>
+                {% endfor %}
+            </form>
+        </p>
+    {% endif %}
     
 
+
+
 </section>
+
 <section>
-    <h4>3.Sigmas = proving key?</h4>
+    <h4>4.Sigmas = proving key?</h4>
     <p>
         <button type="button" onclick="get_formula()" class="btn btn-primary">
             <form action="{{url_for("sigma_formula")}}" method="post" id="get-formula-form">
