@@ -181,3 +181,11 @@ async function prover_random_clear(){
 async function clear_p_random_session(){
     document.getElementById('prover-random-clear-form').submit();
 }
+
+async function load_prover_input(){
+    document.getElementById('load-prover-input-form').submit();
+}
+
+async function calculate_witness(){
+    document.getElementById('calculate-witness-form').submit();
+}

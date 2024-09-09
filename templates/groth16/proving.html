@@ -33,32 +33,48 @@
 <section>
     <h4>2. Build R(x) = input values to computation = buliding witness</h4>
     <p>
-        <button type="button" onclick="put_values()" class="btn btn-primary">
-            <form action="" method="post" id="put-values-form">
+        <button type="button" onclick="load_prover_input()" class="btn btn-primary">
+            <form action="{{url_for("load_prover_input")}}" method="post" id="load-prover-input-form">
                 Load
             </form>
         </button>
     </p>
-    <p>
-        <form action="" method="post" id="calculate-r-form">
-            <div class="row">
-                <div class="col">
-                    <input type="text" class="form-control-1" name="input1" placeholder="input x">
+    {% if p_input_is_load == None %}
+    {% else %}
+        <p>
+            <form action="{{url_for("calculate_witness")}}" method="post" id="calculate-witness-form">
+                <div class="row">
+                    {% for input in inputs %}
+                    <div class="col">
+                        <input type="number" class="form-control-{{loop.index0}}" name="input-{{input}}" placeholder="input {{input}}">
+                    </div>
+                    {% endfor %}
                 </div>
-            </div>
-        </form>
-    </p>
-    <p>
-        <button type="button" onclick="" class="btn btn-primary">Calculate Rx(witness)</button>
-    </p>
-    <p>
-        R = [1, 3, 4, 39, 9, 27, 31, 34] <br>
-    </p>
-    <p>        
-        Rx = [FQ(1), FQ(3), FQ(4), FQ(39), FQ(9), FQ(27), FQ(31), FQ(34)] <br>
-    </p>
-    <p>which Rx's value will be opened to verifier? <b>[ FQ(1), FQ(34) ]</b> </p>
-    <p>why? because in setup phase, sigma1_3, sigma1_4 is created that way</p>
+            </form>
+            <button type="button" onclick="calculate_witness()" class="btn btn-primary">Calculate Rx(witness)</button>
+        </p>
+    {% endif %}
+
+    {% if user_inputs == None or r_values == None %}
+    {% elif public_gates == None %}
+        <p>You have to set public values in SETUP stage</p>
+    {% else %}
+        <p>{{user_inputs}}</p>
+        <p>
+            Rx = {{r_values}} <br>
+        </p>
+        <p>
+            which Rx's value will be opened to verifier? <br>
+            <b>[ 
+            {% for i in public_gates %}
+                {{r_values[i]}},
+            {% endfor %}
+            ]</b> 
+        </p>
+        <!-- <p>why? because in setup phase, sigma1_3, sigma1_4 is created that way</p> -->
+    {% endif %}
+
+
 </section>
 <section>
     <h4>3. Generate Proof(a, b, c)</h4>

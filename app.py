@@ -409,9 +409,9 @@ def load_gates():
 def set_public_gates():
     if request.method == "POST":
         gates = session.get("gates")
-        print(gates)
+        # print(gates)
         if gates:
-            print("gates in")
+            # print("gates in")
             target = [0]
             for i in range(len(gates)-1):
                 check = request.form.get("form-check-input-"+str(i+1))
@@ -651,7 +651,21 @@ def clear_sigmas():
 @app.route("/groth/proving")
 def main_proving():
     p_random = session.get("prover_random")
-    return render_template("groth16/proving.html", p_random=p_random)
+    p_inputs_is_load = session.get("prover_input_form")
+    inputs = session.get("inputs")
+    user_inputs = session.get("user_inputs")
+    r_values = session.get("r_values")
+
+    #values from previous stage(setup)
+    public_gates = session.get("public_gates")
+    return render_template("groth16/proving.html", \
+                           p_random=p_random, \
+                           p_input_is_load=p_inputs_is_load, \
+                           inputs=inputs, \
+                           user_inputs=user_inputs, \
+                           r_values=r_values, \
+                           public_gates=public_gates \
+                           )
 
 # @app.route("/groth/proving/random/save", methods=["POST"])
 # def save_prover_random():
@@ -680,7 +694,47 @@ def clear_prover_random():
         user_code = session.get("code")
         if user_code:
             session["prover_random"] = None
-            print("prover random cleared")
+            session["prover_input_form"] = None
+            session["inputs"] = None
+            session["user_inputs"] = None
+            session['r_values'] = None
+
+            # print("prover random cleared")
+            return redirect(url_for('main_proving'))
+    else:
+        return redirect(url_for('main_proving'))
+    
+@app.route("/groth/proving/inputs", methods=["POST"])
+def load_prover_input():
+    if request.method == "POST":
+        user_code = session.get("code")
+        if user_code:
+            inputs, body = extract_inputs_and_body(parse(user_code))
+            session["prover_input_form"] = True
+            session["inputs"] = inputs
+            return redirect(url_for('main_proving'))
+    else:
+        return redirect(url_for('main_proving'))
+    
+@app.route("/groth/proving/witness/calc", methods=["POST"])
+def calculate_witness():
+    if request.method == "POST":
+        user_code = session.get("code")
+        if user_code:
+            form_data = request.form
+            user_inputs = []
+            for d in form_data:
+                user_inputs.append(int(form_data[d]))
+
+            # todo : calculate r vector
+            inputs, body = extract_inputs_and_body(parse(user_code))
+            flatcode = flatten_body(body)
+
+            r = assign_variables(inputs, user_inputs, flatcode)
+            initialize_symbol()
+
+            session['r_values'] = r
+            session['user_inputs'] = form_data
             return redirect(url_for('main_proving'))
     else:
         return redirect(url_for('main_proving'))
