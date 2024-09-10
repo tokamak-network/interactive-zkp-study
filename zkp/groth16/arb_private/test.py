@@ -296,6 +296,15 @@ def test_proving_and_verifying(pub_r_indexs=None):
     sigma2_1 = sigmas[5]
     sigma2_2 = sigmas[6]
 
+    print("sigma1_1 : {}".format(sigma1_1))
+    # print("type(sigma1_1[0][0]) : {}".format(type(sigma1_1[0][0])))
+    # print("sigma1_2 : {}".format(sigma1_2))
+    # print("sigma1_3 : {}".format(sigma1_3))
+    # print("sigma1_4 : {}".format(sigma1_4))
+    # print("sigma1_5 : {}".format(sigma1_5))
+    # print("sigma2_1 : {}".format(sigma2_1))
+    # print("sigma2_2 : {}".format(sigma2_2))
+
     # EXAMPLE r, s
     r = FR(4106)
     s = FR(4565)

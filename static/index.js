@@ -189,3 +189,7 @@ async function load_prover_input(){
 async function calculate_witness(){
     document.getElementById('calculate-witness-form').submit();
 }
+
+async function generate_proof(){
+    document.getElementById('generate-proof-form').submit();
+}

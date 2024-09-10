@@ -77,9 +77,13 @@
 
 </section>
 <section>
-    <h4>3. Generate Proof(a, b, c)</h4>
+    <h4>3. Generate Proofs(a, b, c)</h4>
     <p>
-        <button type="button" onclick="" class="btn btn-primary">generate</button>
+        <button type="button" onclick="generate_proof()" class="btn btn-primary">
+            <form action="{{url_for("generate_proof")}}" method="post" id="generate-proof-form">
+                generate
+            </form>
+        </button>
     </p>
     <p>
         <table class="table table-bordered">
@@ -95,27 +99,27 @@
                 <tr>
                     <th scope="row">a</th>
                     <td>
-                        proof_a fomula
+                        proof_A = proof_a(sigma1_1, sigma1_2, Ax, Rx, r)
                     </td>
-                    <td>proof_a value</td>
+                    <td>{{proofs.proof_a}}</td>
                 </tr>
 
                 <!-- proof b -->
                 <tr>
                     <th scope="row">b</th>
                     <td>
-                        proof_b fomula
+                        proof_B = proof_b(sigma2_1, sigma2_2, Bx, Rx, s)
                     </td>
-                    <td>proof_b value</td>
+                    <td>{{proofs.proof_b}}</td>
                 </tr>
 
                 <!-- proof c -->
                 <tr>
                     <th scope="row">c</th>
                     <td>
-                        proof_ fomula
+                        proof_C = proof_c(sigma1_1, sigma1_2, sigma1_4, sigma1_5, Bx, Rx, Hx, s, r, proof_A)
                     </td>
-                    <td>proof_c value</td>
+                    <td>{{proofs.proof_c}}</td>
                 </tr>
             </tbody>
         </table>

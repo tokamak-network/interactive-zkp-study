@@ -56,6 +56,12 @@ from zkp.groth16.setup import (
     sigma22
 )
 
+from zkp.groth16.proving import (
+    proof_a,
+    proof_b,
+    proof_c
+)
+
 class FR(FQ):
     field_modulus = bn128.curve_order
 
@@ -658,13 +664,15 @@ def main_proving():
 
     #values from previous stage(setup)
     public_gates = session.get("public_gates")
+    proofs = session.get("proofs")
     return render_template("groth16/proving.html", \
                            p_random=p_random, \
                            p_input_is_load=p_inputs_is_load, \
                            inputs=inputs, \
                            user_inputs=user_inputs, \
                            r_values=r_values, \
-                           public_gates=public_gates \
+                           public_gates=public_gates, \
+                           proofs=proofs \
                            )
 
 # @app.route("/groth/proving/random/save", methods=["POST"])
@@ -698,6 +706,7 @@ def clear_prover_random():
             session["inputs"] = None
             session["user_inputs"] = None
             session['r_values'] = None
+            session["proofs"] = None
 
             # print("prover random cleared")
             return redirect(url_for('main_proving'))
@@ -735,6 +744,82 @@ def calculate_witness():
 
             session['r_values'] = r
             session['user_inputs'] = form_data
+            return redirect(url_for('main_proving'))
+    else:
+        return redirect(url_for('main_proving'))
+    
+@app.route("/groth/proving/proof/generate", methods=["POST"])
+def generate_proof():
+    if request.method == "POST":
+        user_code = session.get("code")
+        user_inputs = session.get("user_inputs")
+        public_gates = session.get("public_gates")
+        prover_random = session.get("prover_random")
+        # print(public_gates)
+        # print(type(public_gates[0]))
+        user_inputs_li = [int(user_inputs[i]) for i in user_inputs]
+        # print(user_inputs_li)
+        sigmas = session.get("sigmas")
+        polys = session.get("polys")
+        if user_code:
+            inputs, body = extract_inputs_and_body(parse(user_code))
+            flatcode = flatten_body(body)
+            rx = assign_variables(inputs, user_inputs_li, flatcode)
+            initialize_symbol()
+
+            r = prover_random["r"]
+            s = prover_random["s"]
+
+            Ax = [ [FR(n) for n in vec] for vec in polys["Ap"] ]    
+            Bx = [ [FR(n) for n in vec] for vec in polys["Bp"] ]
+            Cx = [ [FR(n) for n in vec] for vec in polys["Cp"] ]
+            Zx = [ FR(num) for num in polys["Zp"] ]
+            Rx = [FR(r) for r in rx]
+
+            Hx, remain = hxr(Ax, Bx, Cx, Zx, Rx)
+
+            # print(Ax)
+
+            def turn_g1_int(g1p):
+                return [int(num) for num in g1p]
+            
+            def turn_g2_int(g2p):
+                o = []
+                g2p0 = [int(g2p[0].coeffs[0]), int(g2p[0].coeffs[1])]
+                g2p1 = [int(g2p[1].coeffs[0]), int(g2p[1].coeffs[0])]
+                g2_int = [g2p0, g2p1]
+                return g2_int
+            
+            def turn_g2_fq2(g2p_int):
+                g2p0 = bn128.FQ2(g2p_int[0])
+                g2p1 = bn128.FQ2(g2p_int[1])
+                return (g2p0, g2p1)
+            
+            def turn_g1_fq(g1_int):
+                return (bn128.FQ(g1_int[0]), bn128.FQ(g1_int[1]))
+            
+            sigma1_1 = [turn_g1_fq(point) for point in sigmas["1_1"]]
+            sigma1_2 = [turn_g1_fq(point) for point in sigmas["1_2"]]
+            sigma1_4 = [turn_g1_fq(point) for point in sigmas["1_4"]]
+            sigma1_5 = [turn_g1_fq(point) for point in sigmas["1_5"]]
+            sigma2_1 = [turn_g2_fq2(point) for point in sigmas["2_1"]]
+            sigma2_2 = [turn_g2_fq2(point) for point in sigmas["2_2"]]
+
+            # print(sigma1_1)
+            # print(sigma2_2)
+            
+            prf_a = proof_a(sigma1_1, sigma1_2, Ax, Rx, r)
+            prf_b = proof_b(sigma2_1, sigma2_2, Bx, Rx, s)
+            prf_c = proof_c(sigma1_1, sigma1_2, sigma1_4, sigma1_5, Bx, Rx, Hx, s, r, prf_a, public_gates)
+
+            # print(prf_a)
+            # print(prf_b)
+            # print(prf_c)
+
+            o = {"proof_a" : turn_g1_int(prf_a), "proof_b" : turn_g2_int(prf_b), "prof_c" : turn_g1_int(prf_c)}
+
+            # print(o)
+            session["proofs"] = o
             return redirect(url_for('main_proving'))
     else:
         return redirect(url_for('main_proving'))
