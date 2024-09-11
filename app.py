@@ -62,6 +62,14 @@ from zkp.groth16.proving import (
     proof_c
 )
 
+from tinydb import TinyDB, Query
+from tinydb.storages import MemoryStorage
+
+# DB = TinyDB(storage=MemoryStorage) #Memony DB
+DB = TinyDB('db.json')               #Storage DB
+
+DATA = Query()
+
 class FR(FQ):
     field_modulus = bn128.curve_order
 
@@ -664,7 +672,8 @@ def main_proving():
 
     #values from previous stage(setup)
     public_gates = session.get("public_gates")
-    proofs = session.get("proofs")
+    # proofs = session.get("proofs")
+    proofs = DB.search(DATA.type == "groth.proving.proofs")
     return render_template("groth16/proving.html", \
                            p_random=p_random, \
                            p_input_is_load=p_inputs_is_load, \
@@ -816,10 +825,9 @@ def generate_proof():
             # print(prf_b)
             # print(prf_c)
 
-            o = {"proof_a" : turn_g1_int(prf_a), "proof_b" : turn_g2_int(prf_b), "prof_c" : turn_g1_int(prf_c)}
-
+            o = {"type": "groth.proving.proofs", "proof_a" : turn_g1_int(prf_a), "proof_b" : turn_g2_int(prf_b), "proof_c" : turn_g1_int(prf_c)}
+            DB.upsert(o, DATA.type == "groth.proving.proofs")
             # print(o)
-            session["proofs"] = o
             return redirect(url_for('main_proving'))
     else:
         return redirect(url_for('main_proving'))

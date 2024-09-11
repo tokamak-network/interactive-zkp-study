@@ -7,3 +7,5 @@ zkp/groth16/arb_private/__pycache__/*
 
 .DS_Store
 templates/.DS_Store
+
+db.json
