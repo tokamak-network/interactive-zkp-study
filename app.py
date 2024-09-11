@@ -148,7 +148,12 @@ def main():
     if variables_search == []: variables = None 
     else: variables = variables_search[0]["variables"]
 
-    abc = session.get('abc')
+    # abc = session.get('abc')
+    abc_search = DB.search(DATA.type == "groth.computation.abc")
+    if abc_search == []: abc = None 
+    else: abc = abc_search[0]["abc"]
+
+
     inputs = session.get('inputs')
     user_inputs = session.get('user_inputs')
     r_vector = session.get('r_values')
@@ -269,7 +274,8 @@ def abc_matrix():
             flatcode = flatten_body(body)
             A, B, C = flatcode_to_r1cs(inputs, flatcode)
             initialize_symbol()
-            session["abc"] = {"A": A, "B": B, "C": C}
+            # session["abc"] = {"A": A, "B": B, "C": C}
+            DB.upsert({"type":"groth.computation.abc", "abc":{"A": A, "B": B, "C": C}}, DATA.type == "groth.computation.abc")
 
             return redirect(url_for('main'))
         else:
