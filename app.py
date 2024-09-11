@@ -443,7 +443,11 @@ def create_qap_fr():
 
 @app.route("/groth/setup")
 def main_setup():
-    toxic = session.get("toxic")
+    # toxic = session.get("toxic")
+    toxic_search = DB.search(DATA.type == "groth.setup.toxic")
+    if toxic_search == []: toxic = None 
+    else: toxic = toxic_search[0]["toxic"]
+
     polys = session.get("polys")
     polys_x_val = session.get("polys_x_val")
     numWires = session.get("numWires")
@@ -477,7 +481,8 @@ def setup_save_toxic():
         toxic_x_val = request.form['toxic-x-val']
 
         o = {"alpha":toxic_alpha, "beta" : toxic_beta, "delta" : toxic_delta, "gamma" : toxic_gamma, "x_val": toxic_x_val}
-        session["toxic"] = o
+        # session["toxic"] = o
+        DB.upsert({"type":"groth.setup.toxic", "toxic":o}, DATA.type == "groth.setup.toxic")
         return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
@@ -485,7 +490,9 @@ def setup_save_toxic():
 @app.route("/groth/setup/toxic/clear", methods=["POST"])
 def clear_toxic():
     if request.method == "POST":
-        session["toxic"] = None
+        # session["toxic"] = None
+        DB.remove(DATA.type == "groth.setup.toxic")
+
         session["polys"] = None
         session["polys_x_val"] = None
         session["numWires"] = None
@@ -584,7 +591,11 @@ def get_polys_evaluated():
         code_search = DB.search(DATA.type == "groth.computation.code")
         if code_search == []: user_code = None 
         else: user_code = code_search[0]["code"]
-        toxic = session.get("toxic")
+        
+        # toxic = session.get("toxic")
+        toxic_search = DB.search(DATA.type == "groth.setup.toxic")
+        if toxic_search == []: toxic = None 
+        else: toxic = toxic_search[0]["toxic"]
         
         if user_code:
 
@@ -677,7 +688,11 @@ def calculate_sigmas():
         if code_search == []: user_code = None 
         else: user_code = code_search[0]["code"]
 
-        toxic = session.get("toxic")
+        # toxic = session.get("toxic")
+        toxic_search = DB.search(DATA.type == "groth.setup.toxic")
+        if toxic_search == []: toxic = None 
+        else: toxic = toxic_search[0]["toxic"]    
+        
         public_gates = session.get("public_gates")
         if user_code:
             
