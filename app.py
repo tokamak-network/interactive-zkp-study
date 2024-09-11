@@ -447,24 +447,46 @@ def main_setup():
     toxic_search = DB.search(DATA.type == "groth.setup.toxic")
     if toxic_search == []: toxic = None 
     else: toxic = toxic_search[0]["toxic"]
-
     # polys = session.get("polys")
     polys_search = DB.search(DATA.type == "groth.setup.polys")
     if polys_search == []: polys = None 
     else: polys = polys_search[0]["polys"]
-    
     # polys_x_val = session.get("polys_x_val")
     polys_x_val_search = DB.search(DATA.type == "groth.setup.polys_x_val")
     if polys_x_val_search == []: polys_x_val = None 
     else: polys_x_val = polys_x_val_search[0]["polys_x_val"]
 
-    numWires = session.get("numWires")
-    numGates = session.get("numGates")
-    g1 = session.get("g1")
-    g2 = session.get("g2")
-    sigmas = session.get("sigmas")
-    gates = session.get("gates")
-    public_gates = session.get("public_gates")
+    # numWires = session.get("numWires")
+    numWires_search = DB.search(DATA.type == "groth.setup.numWires")
+    if numWires_search == []: numWires = None 
+    else: numWires = numWires_search[0]["numWires"]
+    # numGates = session.get("numGates")
+    numGates_search = DB.search(DATA.type == "groth.setup.numGates")
+    if numGates_search == []: numGates = None 
+    else: numGates = numGates_search[0]["numGates"]
+    # g1 = session.get("g1")
+    g1_search = DB.search(DATA.type == "groth.setup.g1")
+    if g1_search == []: g1 = None 
+    else: g1 = g1_search[0]["g1"]
+    # g2 = session.get("g2")
+    g2_search = DB.search(DATA.type == "groth.setup.g2")
+    if g2_search == []: g2 = None 
+    else: g2 = g2_search[0]["g2"]
+
+    # sigmas = session.get("sigmas")
+    sigmas_search = DB.search(DATA.type == "groth.setup.sigmas")
+    if sigmas_search == []: sigmas = None 
+    else: sigmas = sigmas_search[0]["sigmas"]
+    
+    # gates = session.get("gates")
+    gates_search = DB.search(DATA.type == "groth.setup.gates")
+    if gates_search == []: gates = None 
+    else: gates = gates_search[0]["gates"]
+
+    # public_gates = session.get("public_gates")
+    public_gates_search = DB.search(DATA.type == "groth.setup.public_gates")
+    if public_gates_search == []: public_gates = None 
+    else: public_gates = public_gates_search[0]["public_gates"]
     
     return render_template("groth16/setup.html", \
                            toxic = toxic, \
@@ -504,15 +526,23 @@ def clear_toxic():
         DB.remove(DATA.type == "groth.setup.polys")
         # session["polys_x_val"] = None
         DB.remove(DATA.type == "groth.setup.polys_x_val")
-        session["numWires"] = None
-        session["numGates"] = None
-        session["g1"] = None
-        session["g2"] = None
 
-        session["gates"] = None
-        session["public_gates"] = None
-        session["sigmas"] = None
+        # session["numWires"] = None
+        DB.remove(DATA.type == "groth.setup.numWires")
+        # session["numGates"] = None
+        DB.remove(DATA.type == "groth.setup.numGates")
+        # session["g1"] = None
+        DB.remove(DATA.type == "groth.setup.g1")
+        # session["g2"] = None
+        DB.remove(DATA.type == "groth.setup.g2")
+
+
+        # session["gates"] = None
+        DB.remove(DATA.type == "groth.setup.gates")
+        # session["public_gates"] = None
+        DB.remove(DATA.type == "groth.setup.public_gates")
         # session["sigmas"] = None
+        DB.remove(DATA.type == "groth.setup.sigmas")
         return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
@@ -529,7 +559,8 @@ def load_gates():
             flatcode = flatten_body(body)
             variables = get_var_placement(inputs, flatcode)
             initialize_symbol()
-            session["gates"] = variables
+            # session["gates"] = variables
+            DB.upsert({"type":"groth.setup.gates", "gates":variables}, DATA.type == "groth.setup.gates")
             return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
@@ -537,7 +568,10 @@ def load_gates():
 @app.route("/groth/setup/gates/set", methods=["POST"])
 def set_public_gates():
     if request.method == "POST":
-        gates = session.get("gates")
+        # gates = session.get("gates")
+        gates_search = DB.search(DATA.type == "groth.setup.gates")
+        if gates_search == []: gates = None 
+        else: gates = gates_search[0]["gates"]
         # print(gates)
         if gates:
             # print("gates in")
@@ -546,7 +580,8 @@ def set_public_gates():
                 check = request.form.get("form-check-input-"+str(i+1))
                 if check != None:
                     target.append(i+1)
-            session["public_gates"] = target
+            # session["public_gates"] = target
+            DB.upsert({"type":"groth.setup.public_gates", "public_gates":target}, DATA.type == "groth.setup.public_gates")
             # print(target)
             return redirect(url_for('main_setup'))
     else:
@@ -555,8 +590,10 @@ def set_public_gates():
 @app.route("/groth/setup/gates/reset", methods=["POST"])
 def reset_public_gates():
     if request.method == "POST":
-        session["public_gates"] = None
-        session["sigmas"] = None #sigmas also have to be recalculated
+        # session["public_gates"] = None
+        DB.remove(DATA.type == "groth.setup.public_gates")
+        # session["sigmas"] = None #sigmas also have to be recalculated
+        DB.remove(DATA.type == "groth.setup.sigmas")
         return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
@@ -670,16 +707,20 @@ def sigma_formula():
 
             numWires = getNumWires(Ap)
             numGates = getNumGates(Ap)
-            session["numWires"] = numWires
-            session["numGates"] = numGates
+            # session["numWires"] = numWires
+            # session["numGates"] = numGates
+            DB.upsert({"type":"groth.setup.numWires", "numWires":numWires}, DATA.type == "groth.setup.numWires")
+            DB.upsert({"type":"groth.setup.numGates", "numGates":numGates}, DATA.type == "groth.setup.numGates")
 
             g1_int = [int(f) for f in G1]
             g2_0 = [int(G2[0].coeffs[0]), int(G2[0].coeffs[1])]
             g2_1 = [int(G2[1].coeffs[0]), int(G2[1].coeffs[0])]
             g2_int = [g2_0, g2_1]
 
-            session["g1"] = g1_int
-            session["g2"] = g2_int
+            # session["g1"] = g1_int
+            # session["g2"] = g2_int
+            DB.upsert({"type":"groth.setup.g1", "g1":g1_int}, DATA.type == "groth.setup.g1")
+            DB.upsert({"type":"groth.setup.g2", "g2":g2_int}, DATA.type == "groth.setup.g2")
 
             # print("Wires and Gates : {}, {}".format(numWires, numGates))
             # print("G1 : {}".format(G1))
@@ -706,7 +747,10 @@ def calculate_sigmas():
         if toxic_search == []: toxic = None 
         else: toxic = toxic_search[0]["toxic"]    
         
-        public_gates = session.get("public_gates")
+        public_gates_search = DB.search(DATA.type == "groth.setup.public_gates")
+        if public_gates_search == []: public_gates = None 
+        else: public_gates = public_gates_search[0]["public_gates"]
+
         if user_code:
             
             if toxic == None:
@@ -805,7 +849,8 @@ def calculate_sigmas():
             print("22_i : {}".format(s22_int))
 
             o = {"1_1":s11_int, "1_2":s12_int, "1_3":s13_int, "1_4":s14_int, "1_5":s15_int, "2_1":s21_int, "2_2":s22_int}
-            session["sigmas"] = o
+            # session["sigmas"] = o
+            DB.upsert({"type":"groth.setup.sigmas", "sigmas":o}, DATA.type == "groth.setup.sigmas")
             # print(o)
             return redirect(url_for('main_setup'))
     else:
@@ -814,11 +859,16 @@ def calculate_sigmas():
 @app.route("/groth/setup/sigma/clear", methods=["POST"])
 def clear_sigmas():
     if request.method == "POST":
-        session["numWires"] = None
-        session["numGates"] = None
-        session["g1"] = None
-        session["g2"] = None
-        session["sigmas"] = None
+        # session["numWires"] = None
+        # session["numGates"] = None
+        DB.remove(DATA.type == "groth.setup.numWires")
+        DB.remove(DATA.type == "groth.setup.numGates")
+        # session["g1"] = None
+        # session["g2"] = None
+        DB.remove(DATA.type == "groth.setup.g1")
+        DB.remove(DATA.type == "groth.setup.g2")
+        # session["sigmas"] = None
+        DB.remove(DATA.type == "groth.setup.sigmas")
 
         return redirect(url_for('main_setup'))
     else:
@@ -840,7 +890,11 @@ def main_proving():
     r_values = session.get("r_values")
 
     #values from previous stage(setup)
-    public_gates = session.get("public_gates")
+    # public_gates = session.get("public_gates")
+    public_gates_search = DB.search(DATA.type == "groth.setup.public_gates")
+    if public_gates_search == []: public_gates = None 
+    else: public_gates = public_gates_search[0]["public_gates"]
+
     # proofs = session.get("proofs")
     proofs = DB.search(DATA.type == "groth.proving.proofs")
     # print(proofs)
@@ -951,13 +1005,21 @@ def generate_proof():
         else: user_code = code_search[0]["code"]
 
         user_inputs = session.get("user_inputs")
-        public_gates = session.get("public_gates")
+        # public_gates = session.get("public_gates")
+        public_gates_search = DB.search(DATA.type == "groth.setup.public_gates")
+        if public_gates_search == []: public_gates = None 
+        else: public_gates = public_gates_search[0]["public_gates"]
+
         prover_random = session.get("prover_random")
         # print(public_gates)
         # print(type(public_gates[0]))
         user_inputs_li = [int(user_inputs[i]) for i in user_inputs]
         # print(user_inputs_li)
-        sigmas = session.get("sigmas")
+        # sigmas = session.get("sigmas")
+        sigmas_search = DB.search(DATA.type == "groth.setup.sigmas")
+        if sigmas_search == []: sigmas = None 
+        else: sigmas = sigmas_search[0]["sigmas"]
+        
         polys = session.get("polys")
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
@@ -1035,7 +1097,11 @@ def generate_proof():
 
 @app.route("/groth/verifying")
 def main_verifying():
-    public_gates_index = session.get("public_gates")
+    # public_gates_index = session.get("public_gates")
+    public_gates_search = DB.search(DATA.type == "groth.setup.public_gates")
+    if public_gates_search == []: public_gates_index = None 
+    else: public_gates_index = public_gates_search[0]["public_gates"]
+
     r_values = session.get("r_values")
     proofs = DB.search(DATA.type == "groth.proving.proofs")
     public_gates = [r_values[i] for i in public_gates_index]
@@ -1052,8 +1118,16 @@ def groth_verify():
         if code_search == []: user_code = None 
         else: user_code = code_search[0]["code"]
 
-        sigmas = session.get("sigmas")
-        public_gates_index = session.get("public_gates")
+        # sigmas = session.get("sigmas")
+        sigmas_search = DB.search(DATA.type == "groth.setup.sigmas")
+        if sigmas_search == []: sigmas = None 
+        else: sigmas = sigmas_search[0]["sigmas"]
+
+        # public_gates_index = session.get("public_gates")
+        public_gates_search = DB.search(DATA.type == "groth.setup.public_gates")
+        if public_gates_search == []: public_gates_index = None 
+        else: public_gates_index = public_gates_search[0]["public_gates"]
+
         r_values = session.get("r_values")
         public_gates = [r_values[i] for i in public_gates_index]
         if user_code:
