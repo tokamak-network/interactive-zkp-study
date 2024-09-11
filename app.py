@@ -62,6 +62,12 @@ from zkp.groth16.proving import (
     proof_c
 )
 
+from zkp.groth16.verifying import (
+    verify,
+    lhs,
+    rhs
+)
+
 from tinydb import TinyDB, Query
 from tinydb.storages import MemoryStorage
 
@@ -121,7 +127,11 @@ def qeval(x):
 
 @app.route("/", methods=["POST","GET"])
 def main():
-    user_code = session.get("code")
+    
+    code_search = DB.search(DATA.type == "groth.computation.code")
+    if code_search == []: user_code = None 
+    else: user_code = code_search[0]["code"]
+
     ast_obj = session.get('ast_obj')
     flatcode = session.get('flatcode')
     variables = session.get('variables')
@@ -159,6 +169,7 @@ def save_code():
     if request.method == "POST":
         session.clear() #clear session before save
         user_code = request.form['z-code']
+        DB.upsert({"type":"groth.computation.code", "code":user_code}, DATA.type == "groth.computation.code")
         session["code"] = user_code
         # return render_template('computation.html', code=session["code"])
         return redirect(url_for('main'))
@@ -173,7 +184,11 @@ def delete_code():
 @app.route("/code/ast", methods=["POST"])
 def ast_table():
     if request.method == "POST":
-        user_code = session.get("code")
+
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
+        
         if user_code:
             func_name = parse(user_code)[0].name
             inputs, body = extract_inputs_and_body(parse(user_code))
@@ -206,7 +221,10 @@ def clear_flatcode():
 @app.route("/flatcode/table", methods=["POST"])
 def flatcode_table():
     if request.method == "POST":
-        user_code = session.get("code")
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
+        
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
@@ -224,7 +242,10 @@ def flatcode_table():
 @app.route("/r1cs/abc", methods=["POST"])
 def abc_matrix():
     if request.method == "POST":
-        user_code = session.get("code")
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
+        
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
@@ -248,7 +269,10 @@ def abc_matrix():
 @app.route("/r1cs/inputs", methods=["POST"])
 def retrieve_values():
     if request.method == "POST":
-        user_code = session.get("code")
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
+
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             session['inputs'] = inputs
@@ -259,7 +283,10 @@ def retrieve_values():
 @app.route("/r1cs/inputs/r", methods=["POST"])
 def calculate_r():
     if request.method == "POST":
-        user_code = session.get("code")
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
+        
         if user_code:
             form_data = request.form
             user_inputs = []
@@ -283,7 +310,10 @@ def calculate_r():
 @app.route("/qap/normal", methods=["POST"])
 def create_qap():
     if request.method == "POST":
-        user_code = session.get("code")
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
+        
         if user_code: 
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
@@ -301,7 +331,10 @@ def create_qap():
 @app.route("/qap/lcm", methods=["POST"])
 def create_qap_lcm():
     if request.method == "POST":
-        user_code = session.get("code")
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
+        
         if user_code: 
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
@@ -320,8 +353,11 @@ def create_qap_lcm():
 @app.route("/qap/fr", methods=["POST"])
 def create_qap_fr():
     if request.method == "POST":
-        user_code = session.get("code")
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
         r_values = session.get('r_values')
+        
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
@@ -409,7 +445,10 @@ def clear_toxic():
 @app.route("/groth/setup/gates", methods=["POST"])
 def load_gates():
     if request.method == "POST":
-        user_code = session.get("code")
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
+        
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
@@ -457,7 +496,10 @@ def reset_public_gates():
 @app.route("/groth/setup/polys", methods=["POST"])
 def get_polys():
     if request.method == "POST":
-        user_code = session.get("code")
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
+        
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
@@ -480,8 +522,11 @@ def get_polys():
 @app.route("/groth/setup/polys/evaluated", methods=["POST"])
 def get_polys_evaluated():
     if request.method == "POST":
-        user_code = session.get("code")
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
         toxic = session.get("toxic")
+        
         if user_code:
 
             x_val = FR(int(toxic["x_val"]))
@@ -529,7 +574,10 @@ def clear_polys():
 @app.route("/groth/setup/sigma/formula", methods=["POST"])
 def sigma_formula():
     if request.method == "POST":
-        user_code = session.get("code")
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
+        
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
@@ -566,7 +614,10 @@ def sigma_formula():
 @app.route("/groth/setup/sigma/calc", methods=["POST"])
 def calculate_sigmas():
     if request.method == "POST":
-        user_code = session.get("code")
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
+
         toxic = session.get("toxic")
         public_gates = session.get("public_gates")
         if user_code:
@@ -584,6 +635,10 @@ def calculate_sigmas():
             Bx = getFRPoly2D(Bp)
             Cx = getFRPoly2D(Cp)
             Zx = getFRPoly1D(Z)
+            # print("Ax : {}".format(Ax))
+            # print("Bx : {}".format(Bx))
+            # print("Cx : {}".format(Cx))
+            # print("Zx : {}".format(Zx))
 
             numGates = getNumGates(Ax)
             numWires = getNumWires(Ax)
@@ -593,11 +648,23 @@ def calculate_sigmas():
             beta = FR(int(toxic["beta"]))
             delta = FR(int(toxic["delta"]))
             gamma = FR(int(toxic["gamma"]))
+
+            print("x_val : {}".format(x_val))
+            print("alpha : {}".format(alpha))
+            print("beta : {}".format(beta))
+            print("delta : {}".format(delta))
+            print("gamma : {}".format(gamma))
             
             Ax_val = ax_val(Ax, x_val)
             Bx_val = bx_val(Bx, x_val)
             Cx_val = cx_val(Cx, x_val)
             Zx_val = zx_val(Zx, x_val)
+
+            print("Ax_val : {}".format(Ax_val))
+            print("Bx_val : {}".format(Bx_val))
+            print("Cx_val : {}".format(Cx_val))
+            print("Zx_val : {}".format(Zx_val))
+            # print("Hx_val : {}".format(Hx_val))
 
             s11 = sigma11(alpha, beta, delta)
             s12 = sigma12(numGates, x_val)
@@ -607,13 +674,22 @@ def calculate_sigmas():
             s21 = sigma21(beta, delta, gamma)
             s22 = sigma22(numGates, x_val)
 
+            print("s11 : {}".format(s11))
+            print("s12 : {}".format(s12))
+            print("s13 : {}".format(s13))
+            print("s14 : {}".format(s14))
+            print("s15 : {}".format(s15))
+            print("s21 : {}".format(s21))
+            print("s22 : {}".format(s22))
+            print("VAL : {}".format(VAL))
+
             def turn_point_int(li):
                 return [int(num) for num in li]
             
             def turn_g2_int(g2p):
                 o = []
                 g2p0 = [int(g2p[0].coeffs[0]), int(g2p[0].coeffs[1])]
-                g2p1 = [int(g2p[1].coeffs[0]), int(g2p[1].coeffs[0])]
+                g2p1 = [int(g2p[1].coeffs[0]), int(g2p[1].coeffs[1])]
                 g2_int = [g2p0, g2p1]
                 return g2_int
             
@@ -633,13 +709,13 @@ def calculate_sigmas():
             # print("21 : {}".format(s21))
             # print("21 : {}".format(s22))
 
-            # print("11_i : {}".format(s11_int))
-            # print("12_i : {}".format(s12_int))
-            # print("13_i : {}".format(s13_int))
-            # print("14_i : {}".format(s14_int))
-            # print("15_i : {}".format(s15_int))
-            # print("21_i : {}".format(s21_int))
-            # print("21_i : {}".format(s22_int))
+            print("11_i : {}".format(s11_int))
+            print("12_i : {}".format(s12_int))
+            print("13_i : {}".format(s13_int))
+            print("14_i : {}".format(s14_int))
+            print("15_i : {}".format(s15_int))
+            print("21_i : {}".format(s21_int))
+            print("22_i : {}".format(s22_int))
 
             o = {"1_1":s11_int, "1_2":s12_int, "1_3":s13_int, "1_4":s14_int, "1_5":s15_int, "2_1":s21_int, "2_2":s22_int}
             session["sigmas"] = o
@@ -699,7 +775,10 @@ def main_proving():
 @app.route("/groth/proving/random/save", methods=["POST"])
 def save_prover_random():
     if request.method == "POST":
-        user_code = session.get("code")
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
+
         if user_code:
             random_r = request.form['prover-random-r']
             random_s = request.form['prover-random-s']
@@ -711,7 +790,10 @@ def save_prover_random():
 @app.route("/groth/proving/random/clear", methods=["POST"])
 def clear_prover_random():
     if request.method == "POST":
-        user_code = session.get("code")
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
+        
         if user_code:
             session["prover_random"] = None
             session["prover_input_form"] = None
@@ -729,7 +811,10 @@ def clear_prover_random():
 @app.route("/groth/proving/inputs", methods=["POST"])
 def load_prover_input():
     if request.method == "POST":
-        user_code = session.get("code")
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
+
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             session["prover_input_form"] = True
@@ -741,7 +826,10 @@ def load_prover_input():
 @app.route("/groth/proving/witness/calc", methods=["POST"])
 def calculate_witness():
     if request.method == "POST":
-        user_code = session.get("code")
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
+
         if user_code:
             form_data = request.form
             user_inputs = []
@@ -765,7 +853,11 @@ def calculate_witness():
 def generate_proof():
     if request.method == "POST":
         #TODO : before call this function, check wehther below data exists
-        user_code = session.get("code")
+
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
+
         user_inputs = session.get("user_inputs")
         public_gates = session.get("public_gates")
         prover_random = session.get("prover_random")
@@ -800,7 +892,7 @@ def generate_proof():
             def turn_g2_int(g2p):
                 o = []
                 g2p0 = [int(g2p[0].coeffs[0]), int(g2p[0].coeffs[1])]
-                g2p1 = [int(g2p[1].coeffs[0]), int(g2p[1].coeffs[0])]
+                g2p1 = [int(g2p[1].coeffs[0]), int(g2p[1].coeffs[1])]
                 g2_int = [g2p0, g2p1]
                 return g2_int
             
@@ -818,6 +910,16 @@ def generate_proof():
             sigma1_5 = [turn_g1_fq(point) for point in sigmas["1_5"]]
             sigma2_1 = [turn_g2_fq2(point) for point in sigmas["2_1"]]
             sigma2_2 = [turn_g2_fq2(point) for point in sigmas["2_2"]]
+
+            print("in generate_proof()")
+            print("sigma1_1 : {}".format(sigma1_1))
+            print("type(sigma1_1[0][0]) : {}".format(type(sigma1_1[0][0])))
+            print("sigma1_2 : {}".format(sigma1_2))
+            # print("sigma1_3 : {}".format(sigma1_3))
+            print("sigma1_4 : {}".format(sigma1_4))
+            print("sigma1_5 : {}".format(sigma1_5))
+            print("sigma2_1 : {}".format(sigma2_1)) #TODO : not right
+            print("sigma2_2 : {}".format(sigma2_2)) #TODO : not right
 
             # print(sigma1_1)
             # print(sigma2_2)
@@ -846,9 +948,73 @@ def main_verifying():
     proofs = DB.search(DATA.type == "groth.proving.proofs")
     public_gates = [r_values[i] for i in public_gates_index]
 
-    print(public_gates)
+    # print(public_gates)
 
     return render_template("groth16/verifying.html", proofs=proofs, public_gates=public_gates)
+
+@app.route("/groth/verifying/verify", methods=["POST"])
+def groth_verify():
+    if request.method == "POST":
+
+        code_search = DB.search(DATA.type == "groth.computation.code")
+        if code_search == []: user_code = None 
+        else: user_code = code_search[0]["code"]
+
+        sigmas = session.get("sigmas")
+        public_gates_index = session.get("public_gates")
+        r_values = session.get("r_values")
+        public_gates = [r_values[i] for i in public_gates_index]
+        if user_code:
+            def turn_g2_fq2(g2p_int):
+                g2p0 = bn128.FQ2(g2p_int[0])
+                g2p1 = bn128.FQ2(g2p_int[1])
+                return (g2p0, g2p1)
+            
+            def turn_g1_fq(g1_int):
+                return (bn128.FQ(g1_int[0]), bn128.FQ(g1_int[1]))
+
+            proofs = DB.search(DATA.type == "groth.proving.proofs")
+
+            proof_a_int = [int(st) for st in proofs[0]["proof_a"]]
+            proof_b_int = [[int(num) for num in vec] for vec in proofs[0]["proof_b"]]
+            proof_c_int = [int(st) for st in proofs[0]["proof_c"]]
+
+            proof_a = turn_g1_fq(proof_a_int)
+            proof_b = turn_g2_fq2(proof_b_int)
+            proof_c = turn_g1_fq(proof_c_int)
+            
+            sigma1_1 = [turn_g1_fq(point) for point in sigmas["1_1"]]
+            sigma1_2 = [turn_g1_fq(point) for point in sigmas["1_2"]]
+            sigma1_3 = [turn_g1_fq(point) for point in sigmas["1_3"]]
+            sigma1_4 = [turn_g1_fq(point) for point in sigmas["1_4"]]
+            sigma1_5 = [turn_g1_fq(point) for point in sigmas["1_5"]]
+            sigma2_1 = [turn_g2_fq2(point) for point in sigmas["2_1"]]
+            sigma2_2 = [turn_g2_fq2(point) for point in sigmas["2_2"]]
+
+            print("proof_a : {}".format(proof_a))
+            print("proof_b : {}".format(proof_b))
+            print("proof_c : {}".format(proof_c))
+
+            print("sigma1_1 : {}".format(sigma1_1))
+            print("type(sigma1_1[0][0]) : {}".format(type(sigma1_1[0][0])))
+            print("sigma1_2 : {}".format(sigma1_2))
+            print("sigma1_3 : {}".format(sigma1_3))
+            print("sigma1_4 : {}".format(sigma1_4))
+            print("sigma1_5 : {}".format(sigma1_5))
+            print("sigma2_1 : {}".format(sigma2_1))
+            print("sigma2_2 : {}".format(sigma2_2))
+
+            print("public_gates : {}".format(public_gates))
+
+            lh = lhs(proof_a, proof_b)
+            print("lhs : {}".format(lh))
+            
+            verify_result = verify(proof_a, proof_b, proof_c, sigma1_1, sigma1_3, sigma2_1, public_gates)
+            print(verify_result)
+            
+            return redirect(url_for('main_verifying'))
+    else:
+        return redirect(url_for('main_verifying'))
 
 # @app.route("/groth/verifying/proofs", methods=["POST"])
 # def get_prover_proofs():

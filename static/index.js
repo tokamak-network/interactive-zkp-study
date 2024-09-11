@@ -193,3 +193,7 @@ async function calculate_witness(){
 async function generate_proof(){
     document.getElementById('generate-proof-form').submit();
 }
+
+async function groth_verify(){
+    document.getElementById('groth-verify-form').submit();
+}

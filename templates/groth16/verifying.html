@@ -24,6 +24,13 @@
 <section>
     <h4>2.Verify</h4>
     <p>
+        <button type="button" onclick="groth_verify()" class="btn btn-primary">
+            <form action="{{url_for("groth_verify")}}" method="post" id="groth-verify-form">
+                Verify
+            </form>
+        </button>
+    </p>
+    <p>
         <table class="table table-bordered">
             <thead>
             <tr>

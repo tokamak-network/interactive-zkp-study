@@ -50,7 +50,11 @@ from proving import (
     build_rpub_enum
 )
 
-from verifying import verify
+from verifying import (
+    verify,
+    lhs,
+    rhs
+)
 
 g1 = bn128.G1
 g2 = bn128.G2
@@ -75,18 +79,18 @@ def qeval(x, w, z):
     y = x**3 + w*z
     return y + x + 5
 """
-    inputs = [3,4,5]
+    inputs = [3]
 
-    r, A, B, C  = code_to_r1cs_with_inputs(code2, inputs)
+    r, A, B, C  = code_to_r1cs_with_inputs(code, inputs)
 
-    # print('r')
-    # print(r)
-    # print('A')
-    # for x in A: print(x)
-    # print('B')
-    # for x in B: print(x)
-    # print('C')
-    # for x in C: print(x)
+    print('r')
+    print(r)
+    print('A')
+    for x in A: print(x)
+    print('B')
+    for x in B: print(x)
+    print('C')
+    for x in C: print(x)
 
     return r, A, B, C
 
@@ -154,11 +158,11 @@ def test_r1cs_qap_lcm():
 
 def test_setup(pub_r_indexs=None):
     # EXAMPLE TOXIC
-    alpha = FR(3926)
-    beta = FR(3604)
-    gamma = FR(2971)
-    delta = FR(1357)
-    x_val = FR(3721)
+    alpha = FR(939138884467)
+    beta = FR(140433499168)
+    gamma = FR(453616200533)
+    delta = FR(167206761118)
+    x_val = FR(70994651299)
 
     # EXAMPLE POLYNOMIAL
     # Ap = [
@@ -202,12 +206,12 @@ def test_setup(pub_r_indexs=None):
     Cx = getFRPoly2D(Cp)
     Zx = getFRPoly1D(Z)
     Rx = getFRPoly1D(R)
-    # print("Ax : {}".format(Ax))
-    # print("Bx : {}".format(Bx))
-    # print("Cx : {}".format(Cx))
-    # print("Zx : {}".format(Zx))
-    # print("Rx : {}".format(Rx))
-    # print("")
+    print("Ax : {}".format(Ax))
+    print("Bx : {}".format(Bx))
+    print("Cx : {}".format(Cx))
+    print("Zx : {}".format(Zx))
+    print("Rx : {}".format(Rx))
+    print("")
 
     # (Ax.R * Bx.R - Cx.R) / Zx = Hx .... r
     Hx, r = hxr(Ax, Bx, Cx, Zx, R)
@@ -224,6 +228,12 @@ def test_setup(pub_r_indexs=None):
     Cx_val = cx_val(Cx, x_val)
     Zx_val = zx_val(Zx, x_val)
 
+    print("Ax_val : {}".format(Ax_val))
+    print("Bx_val : {}".format(Bx_val))
+    print("Cx_val : {}".format(Cx_val))
+    print("Zx_val : {}".format(Zx_val))
+    print("Hx_val : {}".format(Hx_val))
+
     s11 = sigma11(alpha, beta, delta)
     s12 = sigma12(numGates, x_val)
     s13, VAL = sigma13(numWires, alpha, beta, gamma, Ax_val, Bx_val, Cx_val, pub_r_indexs)
@@ -231,6 +241,15 @@ def test_setup(pub_r_indexs=None):
     s15 = sigma15(numGates, delta, x_val, Zx_val)
     s21 = sigma21(beta, delta, gamma)
     s22 = sigma22(numGates, x_val)
+
+    print("s11 : {}".format(s11))
+    print("s12 : {}".format(s12))
+    print("s13 : {}".format(s13))
+    print("s14 : {}".format(s14))
+    print("s15 : {}".format(s15))
+    print("s21 : {}".format(s21))
+    print("s22 : {}".format(s22))
+    print("VAL : {}".format(VAL))
 
     #TEST1 : r should be zero
     t1 = (reduce((lambda x, y : x*y), r) == 0)
@@ -255,11 +274,23 @@ def test_setup(pub_r_indexs=None):
 def test_proving_and_verifying(pub_r_indexs=None):
 
     # EXAMPLE TOXIC
-    alpha = FR(3926)
-    beta = FR(3604)
-    gamma = FR(2971)
-    delta = FR(1357)
-    x_val = FR(3721)
+    # alpha = FR(3926)
+    # beta = FR(3604)
+    # gamma = FR(2971)
+    # delta = FR(1357)
+    # x_val = FR(3721)
+
+    alpha = FR(939138884467)
+    beta = FR(140433499168)
+    gamma = FR(453616200533)
+    delta = FR(167206761118)
+    x_val = FR(70994651299)
+
+    print("x_val : {}".format(x_val))
+    print("alpha : {}".format(alpha))
+    print("beta : {}".format(beta))
+    print("delta : {}".format(delta))
+    print("gamma : {}".format(gamma))
 
     out = test_setup(pub_r_indexs)
     
@@ -297,17 +328,20 @@ def test_proving_and_verifying(pub_r_indexs=None):
     sigma2_2 = sigmas[6]
 
     print("sigma1_1 : {}".format(sigma1_1))
-    # print("type(sigma1_1[0][0]) : {}".format(type(sigma1_1[0][0])))
-    # print("sigma1_2 : {}".format(sigma1_2))
-    # print("sigma1_3 : {}".format(sigma1_3))
-    # print("sigma1_4 : {}".format(sigma1_4))
-    # print("sigma1_5 : {}".format(sigma1_5))
-    # print("sigma2_1 : {}".format(sigma2_1))
-    # print("sigma2_2 : {}".format(sigma2_2))
+    print("type(sigma1_1[0][0]) : {}".format(type(sigma1_1[0][0])))
+    print("sigma1_2 : {}".format(sigma1_2))
+    print("sigma1_3 : {}".format(sigma1_3))
+    print("sigma1_4 : {}".format(sigma1_4))
+    print("sigma1_5 : {}".format(sigma1_5))
+    print("sigma2_1 : {}".format(sigma2_1))
+    print("sigma2_2 : {}".format(sigma2_2))
 
     # EXAMPLE r, s
-    r = FR(4106)
-    s = FR(4565)
+    # r = FR(4106)
+    # s = FR(4565)
+
+    r = FR(409383768602)
+    s = FR(680180253574)
 
     proof_A = proof_a(sigma1_1, sigma1_2, Ax, Rx, r)
     proof_B = proof_b(sigma2_1, sigma2_2, Bx, Rx, s)
@@ -386,6 +420,6 @@ if __name__ == "__main__":
     # test_setup()
 
     # test_proving_and_verifying()
-    test_proving_and_verifying([0,1])
-    test_proving_and_verifying([0,2])
+    # test_proving_and_verifying([0,1])
+    # test_proving_and_verifying([0,2])
     test_proving_and_verifying([0,1,2])
