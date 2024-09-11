@@ -153,10 +153,20 @@ def main():
     if abc_search == []: abc = None 
     else: abc = abc_search[0]["abc"]
 
-
-    inputs = session.get('inputs')
-    user_inputs = session.get('user_inputs')
-    r_vector = session.get('r_values')
+    # inputs = session.get('inputs')
+    inputs_search = DB.search(DATA.type == "groth.computation.inputs")
+    if inputs_search == []: inputs = None 
+    else: inputs = inputs_search[0]["inputs"]
+    
+    # user_inputs = session.get('user_inputs')
+    user_inputs_search = DB.search(DATA.type == "groth.computation.user_inputs")
+    if user_inputs_search == []: user_inputs = None 
+    else: user_inputs = user_inputs_search[0]["user_inputs"]
+    
+    # r_values = session.get('r_values')
+    r_values_search = DB.search(DATA.type == "groth.computation.r_values")
+    if r_values_search == []: r_values = None 
+    else: r_values = r_values_search[0]["r_values"]
 
     qap = session.get('qap')
     qap_lcm = session.get('qap_lcm')
@@ -175,7 +185,7 @@ def main():
                            abc=abc, \
                            inputs=inputs, \
                            user_inputs=user_inputs, \
-                           r_vector=r_vector, \
+                           r_vector=r_values, \
                            qap=qap, \
                            qap_lcm=qap_lcm, \
                            qap_fr=qap_fr, \
@@ -299,7 +309,8 @@ def retrieve_values():
 
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
-            session['inputs'] = inputs
+            # session['inputs'] = inputs
+            DB.upsert({"type":"groth.computation.inputs", "inputs":inputs}, DATA.type == "groth.computation.inputs")
             return redirect(url_for('main'))
         else:
             return redirect(url_for('main'))
@@ -317,15 +328,18 @@ def calculate_r():
             for d in form_data:
                 user_inputs.append(int(form_data[d]))
             # print(user_inputs)
-            session['user_inputs'] = form_data
+            # session['user_inputs'] = form_data
+            DB.upsert({"type":"groth.computation.user_inputs", "user_inputs":form_data}, DATA.type == "groth.computation.user_inputs")
             
             # todo : calculate r vector
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
 
             r = assign_variables(inputs, user_inputs, flatcode)
+            
             initialize_symbol()
-            session['r_values'] = r
+            # session['r_values'] = r
+            DB.upsert({"type":"groth.computation.r_values", "r_values":r}, DATA.type == "groth.computation.r_values")
 
             return redirect(url_for('main'))
         else:
@@ -767,7 +781,12 @@ def clear_sigmas():
 def main_proving():
     p_random = session.get("prover_random")
     p_inputs_is_load = session.get("prover_input_form")
-    inputs = session.get("inputs")
+
+    # inputs = session.get("inputs")
+    inputs_search = DB.search(DATA.type == "groth.computation.inputs")
+    if inputs_search == []: inputs = None 
+    else: inputs = inputs_search[0]["inputs"]
+
     user_inputs = session.get("user_inputs")
     r_values = session.get("r_values")
 
