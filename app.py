@@ -167,6 +167,7 @@ def save_code():
 def delete_code():
     if request.method == "POST":
         session.clear()
+        DB.truncate()
     return redirect(url_for('main'))
 
 @app.route("/code/ast", methods=["POST"])
@@ -763,6 +764,7 @@ def calculate_witness():
 @app.route("/groth/proving/proof/generate", methods=["POST"])
 def generate_proof():
     if request.method == "POST":
+        #TODO : before call this function, check wehther below data exists
         user_code = session.get("code")
         user_inputs = session.get("user_inputs")
         public_gates = session.get("public_gates")
