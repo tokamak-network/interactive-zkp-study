@@ -168,11 +168,25 @@ def main():
     if r_values_search == []: r_values = None 
     else: r_values = r_values_search[0]["r_values"]
 
-    qap = session.get('qap')
-    qap_lcm = session.get('qap_lcm')
+    # qap = session.get('qap')
+    qap_search = DB.search(DATA.type == "groth.computation.qap")
+    if qap_search == []: qap = None 
+    else: qap = qap_search[0]["qap"]
     
-    qap_fr = session.get('qap_fr')
-    fr_modulus = session.get('fr_modulus')
+    # qap_lcm = session.get('qap_lcm')
+    qap_lcm_search = DB.search(DATA.type == "groth.computation.qap_lcm")
+    if qap_lcm_search == []: qap_lcm = None 
+    else: qap_lcm = qap_lcm_search[0]["qap_lcm"]
+
+    # qap_fr = session.get('qap_fr')
+    qap_fr_search = DB.search(DATA.type == "groth.computation.qap_fr")
+    if qap_fr_search == []: qap_fr = None 
+    else: qap_fr = qap_fr_search[0]["qap_fr"]
+    
+    # fr_modulus = session.get('fr_modulus')
+    fr_modulus_search = DB.search(DATA.type == "groth.computation.fr_modulus")
+    if fr_modulus_search == []: fr_modulus = None 
+    else: fr_modulus = fr_modulus_search[0]["fr_modulus"]
     
     if user_code == None:
         user_code = DEFAULT_CODE
@@ -360,7 +374,8 @@ def create_qap():
             Ap, Bp, Cp, Z = r1cs_to_qap(A, B, C)
             initialize_symbol()
 
-            session["qap"] = {"Ap" : Ap, "Bp":Bp, "Cp": Cp, "Z":Z}
+            # session["qap"] = {"Ap" : Ap, "Bp":Bp, "Cp": Cp, "Z":Z}
+            DB.upsert({"type":"groth.computation.qap", "qap":{"Ap" : Ap, "Bp":Bp, "Cp": Cp, "Z":Z}}, DATA.type == "groth.computation.qap")
 
             return redirect(url_for('main'))
         else:
@@ -382,6 +397,7 @@ def create_qap_lcm():
             initialize_symbol()
 
             session["qap_lcm"] = {"Ap" : Ap, "Bp":Bp, "Cp": Cp, "Z":Z}
+            DB.upsert({"type":"groth.computation.qap_lcm", "qap_lcm":{"Ap" : Ap, "Bp":Bp, "Cp": Cp, "Z":Z}}, DATA.type == "groth.computation.qap_lcm")
 
             return redirect(url_for('main'))
         else:
@@ -394,7 +410,10 @@ def create_qap_fr():
         code_search = DB.search(DATA.type == "groth.computation.code")
         if code_search == []: user_code = None 
         else: user_code = code_search[0]["code"]
-        r_values = session.get('r_values')
+        
+        r_values_search = DB.search(DATA.type == "groth.computation.r_values")
+        if r_values_search == []: r_values = None 
+        else: r_values = r_values_search[0]["r_values"]
         
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
@@ -411,9 +430,11 @@ def create_qap_fr():
             Rx = [ int(FR(int(num))) for num in r_values ]
 
             o = {"Ax" : Ax, "Bx": Bx, "Cx": Cx, "Zx": Zx, "Rx": Rx}
-            session["qap_fr"] = o
+            # session["qap_fr"] = o
+            DB.upsert({"type":"groth.computation.qap_fr", "qap_fr":o}, DATA.type == "groth.computation.qap_fr")
             fr_modulus = int(FR.field_modulus)
-            session["fr_modulus"]= fr_modulus
+            # session["fr_modulus"]= fr_modulus
+            DB.upsert({"type":"groth.computation.fr_modulus", "fr_modulus":fr_modulus}, DATA.type == "groth.computation.fr_modulus")
 
             return redirect(url_for('main'))
         else:
