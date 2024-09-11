@@ -883,15 +883,25 @@ def main_proving():
     if prover_random_search == []: p_random = None 
     else: p_random = prover_random_search[0]["prover_random"]
     
-    p_inputs_is_load = session.get("prover_input_form")
+    # p_inputs_is_load = session.get("prover_input_form")
+    prover_input_form_search = DB.search(DATA.type == "groth.proving.prover_input_form")
+    if prover_input_form_search == []: p_inputs_is_load = None 
+    else: p_inputs_is_load = prover_input_form_search[0]["prover_input_form"]
 
     # inputs = session.get("inputs")
-    inputs_search = DB.search(DATA.type == "groth.computation.inputs")
+    inputs_search = DB.search(DATA.type == "groth.proving.inputs")
     if inputs_search == []: inputs = None 
     else: inputs = inputs_search[0]["inputs"]
 
-    user_inputs = session.get("user_inputs")
-    r_values = session.get("r_values")
+    # user_inputs = session.get("user_inputs")
+    user_inputs_search = DB.search(DATA.type == "groth.proving.user_inputs")
+    if user_inputs_search == []: user_inputs = None 
+    else: user_inputs = user_inputs_search[0]["user_inputs"]
+
+    # r_values = session.get("r_values")
+    r_values_search = DB.search(DATA.type == "groth.proving.r_values")
+    if r_values_search == []: r_values = None 
+    else: r_values = r_values_search[0]["r_values"]
 
     #values from previous stage(setup)
     # public_gates = session.get("public_gates")
@@ -949,10 +959,14 @@ def clear_prover_random():
         if user_code:
             # session["prover_random"] = None
             DB.remove(DATA.type == "groth.proving.prover_random")
-            session["prover_input_form"] = None
-            session["inputs"] = None
-            session["user_inputs"] = None
-            session['r_values'] = None
+            # session["prover_input_form"] = None
+            DB.remove(DATA.type == "groth.proving.prover_input_form")
+            # session["inputs"] = None
+            DB.remove(DATA.type == "groth.proving.inputs")
+            # session["user_inputs"] = None
+            DB.remove(DATA.type == "groth.proving.user_inputs")
+            # session['r_values'] = None
+            DB.remove(DATA.type == "groth.proving.r_values")
             # session["proofs"] = None
             DB.remove(DATA.type == "groth.proving.proofs")
 
@@ -970,8 +984,11 @@ def load_prover_input():
 
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
-            session["prover_input_form"] = True
-            session["inputs"] = inputs
+            # session["prover_input_form"] = True
+            DB.upsert({"type":"groth.proving.prover_input_form", "prover_input_form":True}, DATA.type == "groth.proving.prover_input_form")
+
+            # session["inputs"] = inputs
+            DB.upsert({"type":"groth.proving.inputs", "inputs":inputs}, DATA.type == "groth.proving.inputs")
             return redirect(url_for('main_proving'))
     else:
         return redirect(url_for('main_proving'))
@@ -996,8 +1013,10 @@ def calculate_witness():
             r = assign_variables(inputs, user_inputs, flatcode)
             initialize_symbol()
 
-            session['r_values'] = r
-            session['user_inputs'] = form_data
+            # session['r_values'] = r
+            DB.upsert({"type":"groth.proving.r_values", "r_values":r}, DATA.type == "groth.proving.r_values")
+            # session['user_inputs'] = form_data
+            DB.upsert({"type":"groth.proving.user_inputs", "user_inputs":form_data}, DATA.type == "groth.proving.user_inputs")
             return redirect(url_for('main_proving'))
     else:
         return redirect(url_for('main_proving'))
@@ -1011,7 +1030,11 @@ def generate_proof():
         if code_search == []: user_code = None 
         else: user_code = code_search[0]["code"]
 
-        user_inputs = session.get("user_inputs")
+        # user_inputs = session.get("user_inputs")
+        user_inputs_search = DB.search(DATA.type == "groth.proving.user_inputs")
+        if user_inputs_search == []: user_inputs = None 
+        else: user_inputs = user_inputs_search[0]["user_inputs"]
+
         # public_gates = session.get("public_gates")
         public_gates_search = DB.search(DATA.type == "groth.setup.public_gates")
         if public_gates_search == []: public_gates = None 
@@ -1031,7 +1054,12 @@ def generate_proof():
         if sigmas_search == []: sigmas = None 
         else: sigmas = sigmas_search[0]["sigmas"]
         
-        polys = session.get("polys")
+        # polys = session.get("polys")
+        polys_search = DB.search(DATA.type == "groth.setup.polys")
+        if polys_search == []: polys = None 
+        else: polys = polys_search[0]["polys"]
+
+
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
@@ -1109,11 +1137,16 @@ def generate_proof():
 @app.route("/groth/verifying")
 def main_verifying():
     # public_gates_index = session.get("public_gates")
-    public_gates_search = DB.search(DATA.type == "groth.setup.public_gates")
+    public_gates_search = DB.search(DATA.type == "groth.verifying.public_gates")
     if public_gates_search == []: public_gates_index = None 
     else: public_gates_index = public_gates_search[0]["public_gates"]
 
     r_values = session.get("r_values")
+    r_values_search = DB.search(DATA.type == "groth.verifying.r_values")
+    if r_values_search == []: r_values = None 
+    else: pr_values = r_values_search[0]["r_values"]
+
+
     proofs = DB.search(DATA.type == "groth.proving.proofs")
     public_gates = [r_values[i] for i in public_gates_index]
 
@@ -1135,7 +1168,7 @@ def groth_verify():
         else: sigmas = sigmas_search[0]["sigmas"]
 
         # public_gates_index = session.get("public_gates")
-        public_gates_search = DB.search(DATA.type == "groth.setup.public_gates")
+        public_gates_search = DB.search(DATA.type == "groth.verifying.public_gates")
         if public_gates_search == []: public_gates_index = None 
         else: public_gates_index = public_gates_search[0]["public_gates"]
 
