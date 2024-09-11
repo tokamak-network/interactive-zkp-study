@@ -878,7 +878,11 @@ def clear_sigmas():
 
 @app.route("/groth/proving")
 def main_proving():
-    p_random = session.get("prover_random")
+    # p_random = session.get("prover_random")
+    prover_random_search = DB.search(DATA.type == "groth.proving.prover_random")
+    if prover_random_search == []: p_random = None 
+    else: p_random = prover_random_search[0]["prover_random"]
+    
     p_inputs_is_load = session.get("prover_input_form")
 
     # inputs = session.get("inputs")
@@ -928,7 +932,9 @@ def save_prover_random():
         if user_code:
             random_r = request.form['prover-random-r']
             random_s = request.form['prover-random-s']
-            session["prover_random"] = {"r" : int(random_r), "s" : int(random_s)}
+            o = {"r" : int(random_r), "s" : int(random_s)}
+            # session["prover_random"] = o
+            DB.upsert({"type":"groth.proving.prover_random", "prover_random":o}, DATA.type == "groth.proving.prover_random")
             return redirect(url_for('main_proving'))
     else:
         return redirect(url_for('main_proving'))
@@ -941,7 +947,8 @@ def clear_prover_random():
         else: user_code = code_search[0]["code"]
         
         if user_code:
-            session["prover_random"] = None
+            # session["prover_random"] = None
+            DB.remove(DATA.type == "groth.proving.prover_random")
             session["prover_input_form"] = None
             session["inputs"] = None
             session["user_inputs"] = None
@@ -1010,7 +1017,11 @@ def generate_proof():
         if public_gates_search == []: public_gates = None 
         else: public_gates = public_gates_search[0]["public_gates"]
 
-        prover_random = session.get("prover_random")
+        # prover_random = session.get("prover_random")
+        prover_random_search = DB.search(DATA.type == "groth.proving.prover_random")
+        if prover_random_search == []: prover_random = None 
+        else: prover_random = prover_random_search[0]["prover_random"]
+
         # print(public_gates)
         # print(type(public_gates[0]))
         user_inputs_li = [int(user_inputs[i]) for i in user_inputs]
