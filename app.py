@@ -1137,15 +1137,14 @@ def generate_proof():
 @app.route("/groth/verifying")
 def main_verifying():
     # public_gates_index = session.get("public_gates")
-    public_gates_search = DB.search(DATA.type == "groth.verifying.public_gates")
+    public_gates_search = DB.search(DATA.type == "groth.setup.public_gates")
     if public_gates_search == []: public_gates_index = None 
     else: public_gates_index = public_gates_search[0]["public_gates"]
 
-    r_values = session.get("r_values")
-    r_values_search = DB.search(DATA.type == "groth.verifying.r_values")
+    # r_values = session.get("r_values")
+    r_values_search = DB.search(DATA.type == "groth.proving.r_values")
     if r_values_search == []: r_values = None 
-    else: pr_values = r_values_search[0]["r_values"]
-
+    else: r_values = r_values_search[0]["r_values"]
 
     proofs = DB.search(DATA.type == "groth.proving.proofs")
     public_gates = [r_values[i] for i in public_gates_index]
