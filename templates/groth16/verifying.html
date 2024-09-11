@@ -3,15 +3,23 @@
 {% block content_in %}
 <h2>Verifying</h2>
 <section>
-    <h4>1.Getting proofs and public Rx from prover</h4>
-    <p>
-        <ul>
-           <li>proof_a : ...</li>
-           <li>proof_b : ...</li> 
-           <li>proof_c : ...</li> 
-           <li>public Rx : ...</li>
-        </ul>
-    </p>
+    <h4>1.Proofs and public Rx from prover</h4>
+    {% if proofs == [] %}
+    {% else %}
+        <p>
+            <ul>
+            <li>proof_a : [{{snl(proofs[0].proof_a)}}]</li>
+            <li>
+                proof_b : 
+                [{% for b in proofs[0].proof_b %} 
+                    [{{snl(b)}}]
+                {% endfor %}]
+            </li> 
+            <li>proof_c : [{{snl(proofs[0].proof_c)}}]</li> 
+            <li>public Rx : {{public_gates}}</li>
+            </ul>
+        </p>
+    {% endif %}
 </section>
 <section>
     <h4>2.Verify</h4>

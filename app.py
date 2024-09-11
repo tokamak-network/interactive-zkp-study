@@ -675,7 +675,7 @@ def main_proving():
     public_gates = session.get("public_gates")
     # proofs = session.get("proofs")
     proofs = DB.search(DATA.type == "groth.proving.proofs")
-    print(proofs)
+    # print(proofs)
 
     return render_template("groth16/proving.html", \
                            p_random=p_random, \
@@ -841,4 +841,22 @@ def generate_proof():
 
 @app.route("/groth/verifying")
 def main_verifying():
-    return render_template("groth16/verifying.html")
+    public_gates_index = session.get("public_gates")
+    r_values = session.get("r_values")
+    proofs = DB.search(DATA.type == "groth.proving.proofs")
+    public_gates = [r_values[i] for i in public_gates_index]
+
+    print(public_gates)
+
+    return render_template("groth16/verifying.html", proofs=proofs, public_gates=public_gates)
+
+# @app.route("/groth/verifying/proofs", methods=["POST"])
+# def get_prover_proofs():
+#     if request.method == "POST":
+        
+#         if proofs != []: #if proof generated
+#             session["groth.verifying.proofs"] = True
+#             session["groth.verifying.public_r"] = True
+#             return redirect(url_for('main_proving'))
+#     else:
+#         return redirect(url_for('main_proving'))
