@@ -448,8 +448,16 @@ def main_setup():
     if toxic_search == []: toxic = None 
     else: toxic = toxic_search[0]["toxic"]
 
-    polys = session.get("polys")
-    polys_x_val = session.get("polys_x_val")
+    # polys = session.get("polys")
+    polys_search = DB.search(DATA.type == "groth.setup.polys")
+    if polys_search == []: polys = None 
+    else: polys = polys_search[0]["polys"]
+    
+    # polys_x_val = session.get("polys_x_val")
+    polys_x_val_search = DB.search(DATA.type == "groth.setup.polys_x_val")
+    if polys_x_val_search == []: polys_x_val = None 
+    else: polys_x_val = polys_x_val_search[0]["polys_x_val"]
+
     numWires = session.get("numWires")
     numGates = session.get("numGates")
     g1 = session.get("g1")
@@ -492,9 +500,10 @@ def clear_toxic():
     if request.method == "POST":
         # session["toxic"] = None
         DB.remove(DATA.type == "groth.setup.toxic")
-
-        session["polys"] = None
-        session["polys_x_val"] = None
+        # session["polys"] = None
+        DB.remove(DATA.type == "groth.setup.polys")
+        # session["polys_x_val"] = None
+        DB.remove(DATA.type == "groth.setup.polys_x_val")
         session["numWires"] = None
         session["numGates"] = None
         session["g1"] = None
@@ -580,7 +589,8 @@ def get_polys():
             # print(Ax)
 
             o = {"Ap": Ax, "Bp": Bx, "Cp":Cx, "Zp":Zx}
-            session["polys"] = o
+            # session["polys"] = o
+            DB.upsert({"type":"groth.setup.polys", "polys":o}, DATA.type == "groth.setup.polys")
             return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
@@ -601,7 +611,7 @@ def get_polys_evaluated():
 
             x_val = FR(int(toxic["x_val"]))
 
-            print("x_val?? : {}".format(x_val))
+            # print("x_val?? : {}".format(x_val))
 
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
@@ -624,10 +634,11 @@ def get_polys_evaluated():
             Cx_val_int = [ int(num) for num in Cx_val ]
             Zx_val_int = int(Zx_val)
 
-            print("Ax_Val : {}".format(type(Ax_val[0])))
+            # print("Ax_Val : {}".format(type(Ax_val[0])))
 
             o = {"Ax_val": Ax_val_int, "Bx_val": Bx_val_int, "Cx_val":Cx_val_int, "Zx_val":Zx_val_int}
-            session["polys_x_val"] = o
+            # session["polys_x_val"] = o
+            DB.upsert({"type":"groth.setup.polys_x_val", "polys_x_val":o}, DATA.type == "groth.setup.polys_x_val")
             return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
@@ -635,8 +646,10 @@ def get_polys_evaluated():
 @app.route("/groth/setup/polys/clear", methods=["POST"])
 def clear_polys():
     if request.method == "POST":
-        session["polys"] = None
-        session["polys_x_val"] = None
+        # session["polys"] = None
+        DB.remove(DATA.type == "groth.setup.polys")
+        # session["polys_x_val"] = None
+        DB.remove(DATA.type == "groth.setup.polys_x_val")
         return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
