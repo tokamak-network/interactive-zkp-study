@@ -674,6 +674,8 @@ def main_proving():
     public_gates = session.get("public_gates")
     # proofs = session.get("proofs")
     proofs = DB.search(DATA.type == "groth.proving.proofs")
+    print(proofs)
+
     return render_template("groth16/proving.html", \
                            p_random=p_random, \
                            p_input_is_load=p_inputs_is_load, \
@@ -715,7 +717,8 @@ def clear_prover_random():
             session["inputs"] = None
             session["user_inputs"] = None
             session['r_values'] = None
-            session["proofs"] = None
+            # session["proofs"] = None
+            DB.remove(DATA.type == "groth.proving.proofs")
 
             # print("prover random cleared")
             return redirect(url_for('main_proving'))
