@@ -132,7 +132,12 @@ def main():
     if code_search == []: user_code = None 
     else: user_code = code_search[0]["code"]
 
-    ast_obj = session.get('ast_obj')
+    # ast_obj = session.get('ast_obj')
+    ast_obj_search = DB.search(DATA.type == "groth.computation.ast_obj")
+    if ast_obj_search == []: ast_obj = None 
+    else: ast_obj = ast_obj_search[0]["ast_obj"]
+
+
     flatcode = session.get('flatcode')
     variables = session.get('variables')
     abc = session.get('abc')
@@ -204,6 +209,7 @@ def ast_table():
 
             #save ast object
             session['ast_obj'] = final_out
+            DB.upsert({"type":"groth.computation.ast_obj", "ast_obj":final_out}, DATA.type == "groth.computation.ast_obj")
             # flatcode = flatten_body(body)
             # print(flatcode)
             # #[['*', 'sym_1', 'x', 'x'], 
