@@ -138,8 +138,16 @@ def main():
     else: ast_obj = ast_obj_search[0]["ast_obj"]
 
 
-    flatcode = session.get('flatcode')
-    variables = session.get('variables')
+    # flatcode = session.get('flatcode')
+    flatcode_search = DB.search(DATA.type == "groth.computation.flatcode")
+    if flatcode_search == []: flatcode = None 
+    else: flatcode = flatcode_search[0]["flatcode"]
+
+    # variables = session.get('variables')
+    variables_search = DB.search(DATA.type == "groth.computation.variables")
+    if variables_search == []: variables = None 
+    else: variables = variables_search[0]["variables"]
+
     abc = session.get('abc')
     inputs = session.get('inputs')
     user_inputs = session.get('user_inputs')
@@ -221,8 +229,10 @@ def ast_table():
             return redirect(url_for('main'))
 
 def clear_flatcode():
-    session['flatcode'] = None
-    session['variables'] = None
+    # session['flatcode'] = None
+    DB.remove(DATA.type == "groth.computation.flatcode")
+    # session['variables'] = None
+    DB.remove(DATA.type == "groth.computation.variables")
         
 @app.route("/flatcode/table", methods=["POST"])
 def flatcode_table():
@@ -239,8 +249,10 @@ def flatcode_table():
             
             initialize_symbol()
             
-            session['flatcode'] = flatcode
-            session['variables'] = variables
+            # session['flatcode'] = flatcode
+            DB.upsert({"type":"groth.computation.flatcode", "flatcode":flatcode}, DATA.type == "groth.computation.flatcode")
+            # session['variables'] = variables
+            DB.upsert({"type":"groth.computation.variables", "variables":variables}, DATA.type == "groth.computation.variables")
             return redirect(url_for('main'))
         else:
             return redirect(url_for('main'))
