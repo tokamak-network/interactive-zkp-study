@@ -1125,6 +1125,7 @@ def generate_proof():
             # print(prf_b)
             # print(prf_c)
 
+            #TODO : should change way of storing data
             o = {"type": "groth.proving.proofs", "proof_a" : turn_g1_int(prf_a), "proof_b" : turn_g2_int(prf_b), "proof_c" : turn_g1_int(prf_c)}
             DB.upsert(o, DATA.type == "groth.proving.proofs")
             # print(o)
