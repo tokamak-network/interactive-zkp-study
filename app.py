@@ -1149,10 +1149,11 @@ def main_verifying():
 
     proofs = DB.search(DATA.type == "groth.proving.proofs")
     public_gates = [r_values[i] for i in public_gates_index]
+    verify_result = DB.search(DATA.type == "groth.verifying.verify_result")
 
     # print(public_gates)
 
-    return render_template("groth16/verifying.html", proofs=proofs, public_gates=public_gates)
+    return render_template("groth16/verifying.html", proofs=proofs, public_gates=public_gates, verify_result=verify_result)
 
 @app.route("/groth/verifying/verify", methods=["POST"])
 def groth_verify():
@@ -1168,12 +1169,16 @@ def groth_verify():
         else: sigmas = sigmas_search[0]["sigmas"]
 
         # public_gates_index = session.get("public_gates")
-        public_gates_search = DB.search(DATA.type == "groth.verifying.public_gates")
+        public_gates_search = DB.search(DATA.type == "groth.setup.public_gates")
         if public_gates_search == []: public_gates_index = None 
         else: public_gates_index = public_gates_search[0]["public_gates"]
 
-        r_values = session.get("r_values")
-        public_gates = [r_values[i] for i in public_gates_index]
+        # r_values = session.get("r_values")
+        r_values_search = DB.search(DATA.type == "groth.proving.r_values")
+        if r_values_search == []: r_values = None 
+        else: r_values = r_values_search[0]["r_values"]
+
+        public_gates_with_index = [(i,r_values[i]) for i in public_gates_index]
         if user_code:
             def turn_g2_fq2(g2p_int):
                 g2p0 = bn128.FQ2(g2p_int[0])
@@ -1214,14 +1219,14 @@ def groth_verify():
             print("sigma2_1 : {}".format(sigma2_1))
             print("sigma2_2 : {}".format(sigma2_2))
 
-            print("public_gates : {}".format(public_gates))
+            print("public_gates : {}".format(public_gates_with_index))
 
             lh = lhs(proof_a, proof_b)
             print("lhs : {}".format(lh))
             
-            verify_result = verify(proof_a, proof_b, proof_c, sigma1_1, sigma1_3, sigma2_1, public_gates)
+            verify_result = verify(proof_a, proof_b, proof_c, sigma1_1, sigma1_3, sigma2_1, public_gates_with_index)
             print(verify_result)
-            
+            DB.upsert({"type":"groth.verifying.verify_result", "verify_result":verify_result}, DATA.type == "groth.verifying.verify_result")
             return redirect(url_for('main_verifying'))
     else:
         return redirect(url_for('main_verifying'))
