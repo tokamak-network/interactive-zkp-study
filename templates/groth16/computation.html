@@ -1,4 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h2 {
+  color: #2c3e50;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 10px;
+}
+
+h4 {
+  color: #2980b9;
+  margin-top: 30px;
+}
+
+h5 {
+  color: #34495e;
+}
+
+section {
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.btn {
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+
+textarea {
+  width: 100%;
+  min-height: 150px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+th,
+td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+.form-control {
+  margin-bottom: 10px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.col {
+  flex: 1;
+  padding: 0 10px;
+}
+
+input[type='text'] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+    </style>
+</head>
+<body>
+    
+
 {% extends 'groth16/base-groth16.html' %}
+
 
 {% block content_in %}
     <h2>Computation</h2>
@@ -277,3 +372,6 @@
         {% endif %}        
     </section>
 {% endblock %}
+
+</body>
+</html>
