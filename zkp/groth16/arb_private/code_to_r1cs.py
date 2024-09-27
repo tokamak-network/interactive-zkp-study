@@ -32,7 +32,7 @@ def extract_inputs_and_body(code):
     body = []
     returned = False
     for c in code[0].body:
-        if not isinstance(c, (ast.Assign, ast.Return)):
+        if not isinstance(c, (ast.Assign, ast.Assert, ast.Return)):
             raise Exception("Expected variable assignment or return")
         if returned:
             raise Exception("Cannot do stuff after a return statement")
@@ -58,6 +58,15 @@ def mksymbol():
 def initialize_symbol():
     next_symbol[0] = 0
 
+# Get the value of a node
+def get_value(node):
+    if isinstance(node, ast.Name):
+        return node.id
+    elif isinstance(node, ast.Constant):
+        return node.value
+    else:
+        raise Exception("Assert comparison must be between variables or constants")
+
 # "Flatten" a single statement into a list of simple statements.
 # First extract the target variable, then flatten the expression
 def flatten_stmt(stmt):
@@ -65,7 +74,16 @@ def flatten_stmt(stmt):
     if isinstance(stmt, ast.Assign):
         assert len(stmt.targets) == 1 and isinstance(stmt.targets[0], ast.Name)
         target = stmt.targets[0].id
-    elif isinstance(stmt, ast.Return):
+    elif isinstance(stmt, ast.Assert):
+        assert isinstance(stmt.test, ast.Compare) and len(stmt.test.ops) == 1 and isinstance(stmt.test.ops[0], ast.Eq), "Only '==' comparison is allowed in assert statements"
+        left = get_value(stmt.test.left)
+        right = get_value(stmt.test.comparators[0])
+        # 두 값이 모두 상수인 경우 미리 검사
+        if isinstance(left, (int, float)) and isinstance(right, (int, float)):
+            if left != right:
+                raise AssertionError(f"Assert condition not satisfied: {left} != {right}")
+        return [['assert', left, right]] #@Todo: assert -> '==' ?
+    elif isinstance(stmt, ast.Return): #@Todo: 고정된 ~out 수정
         target = '~out'
     # Get inner content
     return flatten_expr(target, stmt.value)
@@ -111,6 +129,8 @@ def flatten_expr(target, expr):
                     nxt = target if i == expr.right.n - 1 else mksymbol()
                     o.append(['*', nxt, latest, base])
                 return o
+        elif isinstance(expr, ast.Compare):
+            raise Exception("Comparisons are only allowed in assert statements")
         else:
             raise Exception("Bad operation: %r" % ast.dump(expr.op))
         # If the subexpression is a variable or a number, then include it directly
@@ -148,9 +168,12 @@ def insert_var(arr, varz, var, used, reverse=False):
         arr[0] += var * (-1 if reverse else 1)
 
 # Maps input, output and intermediate variables to indices
-def get_var_placement(inputs, flatcode):
-    return ['~one'] + [x for x in inputs] + ['~out'] + [c[1] for c in flatcode if c[1] not in inputs and c[1] != '~out']
-
+def get_var_placement(inputs, flatcode):    #@Todo: 고정된 ~out 수정
+    used_vars = ['~one'] + inputs + ['~out']
+    for c in flatcode:
+        if c[0] != 'assert' and c[1] not in used_vars:
+            used_vars.append(c[1])
+    return used_vars
 
 # Convert the flattened code generated above into a rank-1 constraint system
 def flatcode_to_r1cs(inputs, flatcode):
@@ -161,9 +184,11 @@ def flatcode_to_r1cs(inputs, flatcode):
     for x in flatcode:
     # 모든 flatcode를 대상으로 수행. flatcode의 갯수만큼 행의 row갯수(컬럼 높이)가 결정된다.
         a, b, c = [0] * len(varz), [0] * len(varz), [0] * len(varz)
-        if x[1] in used:
-            raise Exception("Variable already used: %r" % x[1])
-        used[x[1]] = True
+        # assert는 이미 used된 변수를 비교하기위해 사용
+        if x[0] != 'assert':
+            if x[1] in used:
+                raise Exception("Variable already used: %r" % x[1])
+            used[x[1]] = True
         # 타겟 자리도 used로 바꾸고 시작
         if x[0] == 'set':
             # a의 타겟 자리에 1을 더하고, 우항(value) 자리를 -1로 바꾼다
@@ -190,6 +215,11 @@ def flatcode_to_r1cs(inputs, flatcode):
             insert_var(c, varz, x[2], used)
             a[varz.index(x[1])] = 1
             insert_var(b, varz, x[3], used)
+        elif x[0] == 'assert':
+            # assert 문 처리
+            insert_var(a, varz, x[1], used)
+            b[0] = 1
+            insert_var(c, varz, x[2], used)
         A.append(a)
         B.append(b)
         C.append(c)

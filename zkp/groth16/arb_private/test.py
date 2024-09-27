@@ -71,6 +71,8 @@ def test_code_to_r1cs():
     code = """
 def qeval(x):
     y = x**3
+    z = y * x
+    assert z == 81
     return y + x + 5
 """
 
