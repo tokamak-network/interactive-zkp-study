@@ -51,11 +51,13 @@ def _eval_poly(poly, x):
 # Multiply Vector * Matrix
 def _multiply_vec_matrix(vec, matrix):
     # len(vec) == len(matrix.row)
-    assert not len(vec) == len(matrix[0])
-    target = [FR(0)]*len(vec)
-    for i in range(len(matrix)): #loop num of rows == size of vec, 0-5
-        for j in range(len(matrix[0])): #loop num of columns, 0-3
-            target[j] = target[j] + vec[i] * matrix[i][j]
+    num_rows = len(matrix)
+    num_cols = len(matrix[0])
+    assert len(vec) == num_rows
+    target = [FR(0)]*num_cols
+    for i in range(num_rows): #loop num of rows == size of vec, 0-5
+        for j in range(num_cols): #loop num of columns, 0-3
+            target[j] += matrix[i][j] * vec[i]
     return target
 
 def _multiply_vec_vec(vec1, vec2):
