@@ -27,7 +27,6 @@ def rhs(prf_C, sigma1_1, sigma1_3, sigma2_1, rx_pub):
 
 #(rx_pub) = [(index_i, ri), ... ]
 def verify(prf_A, prf_B, prf_C, sigma1_1, sigma1_3, sigma2_1, rx_pub):
-
     LHS = pairing(prf_B, prf_A)
     RHS = pairing(sigma2_1[0], sigma1_1[0])
 
@@ -39,3 +38,16 @@ def verify(prf_A, prf_B, prf_C, sigma1_1, sigma1_3, sigma2_1, rx_pub):
     RHS = (RHS * pairing(sigma2_1[1], temp)) * pairing(sigma2_1[2], prf_C)
 
     return LHS == RHS
+
+def verifyResult(prf_A, prf_B, prf_C, sigma1_1, sigma1_3, sigma2_1, rx_pub):
+    LHS = pairing(prf_B, prf_A)
+    RHS = pairing(sigma2_1[0], sigma1_1[0])
+
+    temp = None
+
+    for i, ri in rx_pub:
+        temp = add(temp, mult(sigma1_3[i], int(ri)))
+
+    RHS = (RHS * pairing(sigma2_1[1], temp)) * pairing(sigma2_1[2], prf_C)
+
+    return { "lhs": LHS, "rhs": RHS, "result": LHS==RHS }

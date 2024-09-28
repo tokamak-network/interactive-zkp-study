@@ -4,18 +4,18 @@
 <h2>Verifying</h2>
 <section>
     <h4>1.Proofs and public Rx from prover</h4>
-    {% if proofs == [] %}
+    {% if proofs == None or proofs == [] %}
     {% else %}
         <p>
             <ul>
-            <li>proof_a : [{{snl(proofs[0].proof_a)}}]</li>
+            <li>proof_a : [{{snl(proofs.proof_a)}}]</li>
             <li>
-                proof_b : 
-                [{% for b in proofs[0].proof_b %} 
+                proof_b :
+                [{% for b in proofs.proof_b %}
                     [{{snl(b)}}]
                 {% endfor %}]
-            </li> 
-            <li>proof_c : [{{snl(proofs[0].proof_c)}}]</li> 
+            </li>
+            <li>proof_c : [{{snl(proofs.proof_c)}}]</li>
             <li>public Rx : {{public_gates}}</li>
             </ul>
         </p>
@@ -23,20 +23,21 @@
 </section>
 <section>
     <h4>2.Verify</h4>
+    {%if proofs != None and proofs != [] %}
     <p>
-        <button type="button" onclick="groth_verify()" class="btn btn-primary">
+        <button type="button" onclick="groth_verify()" class="btn btn-primary" >
             <form action="{{url_for("groth_verify")}}" method="post" id="groth-verify-form">
                 Verify
             </form>
         </button>
-    </p>
+    </p> {% endif %}
     <p>
         <table class="table table-bordered">
             <thead>
             <tr>
                 <th scope="col">Index</th>
                 <th scope="col">Formula</th>
-                <th scope="col">Value</th>
+                <th scope="col" style="width:50%">Value</th>
             </tr>
             </thead>
             <tbody>
@@ -46,7 +47,10 @@
                     <td>
                         LHS fomula
                     </td>
-                    <td>LHS value</td>
+                    <td> {% if lhs != undefined and lhs != None %}
+                            <font size="2">{{lhs}}</font>
+                         {% endif %}
+                    </td>
                 </tr>
 
                 <!-- RHS -->
@@ -55,11 +59,20 @@
                     <td>
                         RHS fomula
                     </td>
-                    <td>RHS value</td>
+                    <td>{% if rhs != undefined and rhs != None %}
+                            <font size="2">{{rhs}}</font>
+                        {% endif %}
+                    </td>
                 </tr>
             </tbody>
         </table>
     </p>
-    <p>Is LHS == RHS ? True / False</p>
+    <p>Is LHS == RHS ?
+        {% if verify_result != undefined and verify_result != None %}
+            <font color="red">{{verify_result}}</font>
+        {% else %}
+            True / False
+        {% endif %}
+    </p>
 </section>
 {% endblock %}
