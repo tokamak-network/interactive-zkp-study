@@ -65,11 +65,11 @@
         </p>
         <p>
             which Rx's value will be opened to verifier? <br>
-            <b>[ 
+            <b>[
             {% for i in public_gates %}
                 {{r_values[i]}},
             {% endfor %}
-            ]</b> 
+            ]</b>
         </p>
         <!-- <p>why? because in setup phase, sigma1_3, sigma1_4 is created that way</p> -->
     {% endif %}
@@ -85,7 +85,7 @@
             </form>
         </button>
     </p>
-    {% if proofs == [] %}
+    {% if proofs == None or proofs == [] %}
     {% else %}
     <p>
         <table class="table table-bordered">
@@ -103,7 +103,7 @@
                     <td>
                         proof_A = proof_a(sigma1_1, sigma1_2, Ax, Rx, r)
                     </td>
-                    <td>[{{snl(proofs[0].proof_a)}}]</td>
+                    <td>[{{snl(proofs.proof_a)}}]</td>
                 </tr>
 
                 <!-- proof b -->
@@ -113,10 +113,10 @@
                         proof_B = proof_b(sigma2_1, sigma2_2, Bx, Rx, s)
                     </td>
                     <td>
-                        {% for b in proofs[0].proof_b %}
+                        {% for b in proofs.proof_b %}
                             [{{snl(b)}}]<br>
                         {% endfor %}
-                        
+
                     </td>
                 </tr>
 
@@ -126,7 +126,7 @@
                     <td>
                         proof_C = proof_c(sigma1_1, sigma1_2, sigma1_4, sigma1_5, Bx, Rx, Hx, s, r, proof_A)
                     </td>
-                    <td>[{{snl(proofs[0].proof_c)}}]</td>
+                    <td>[{{snl(proofs.proof_c)}}]</td>
                 </tr>
             </tbody>
         </table>
