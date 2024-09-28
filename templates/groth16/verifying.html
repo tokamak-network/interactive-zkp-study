@@ -23,13 +23,14 @@
 </section>
 <section>
     <h4>2.Verify</h4>
+    {%if proofs != None and proofs != [] %}
     <p>
-        <button type="button" onclick="groth_verify()" class="btn btn-primary">
+        <button type="button" onclick="groth_verify()" class="btn btn-primary" >
             <form action="{{url_for("groth_verify")}}" method="post" id="groth-verify-form">
                 Verify
             </form>
         </button>
-    </p>
+    </p> {% endif %}
     <p>
         <table class="table table-bordered">
             <thead>
