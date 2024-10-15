@@ -25,7 +25,7 @@
     <h4>2.Verify</h4>
     <p>
         <button type="button" onclick="groth_verify()" class="btn btn-primary">
-            <form action="{{url_for("groth_verify")}}" method="post" id="groth-verify-form">
+            <form action="{{url_for('groth_verify')}}" method="post" id="groth-verify-form">
                 Verify
             </form>
         </button>
@@ -60,6 +60,11 @@
             </tbody>
         </table>
     </p>
-    <p>Is LHS == RHS ? True / False</p>
+    <p>Is LHS == RHS ?
+        {% if verify_result == [] %}
+        {% else %}
+        {{verify_result[0].verify_result}}
+        {% endif %}
+    </p>
 </section>
 {% endblock %}

@@ -6,11 +6,17 @@
 
 ##RUN
 # python groth16FR.py
+import os,sys
+sys.path.append(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from py_ecc.fields import bn128_FQ as FQ
 from py_ecc import bn128
 
 from random import randint
+from zkp.groth16.qap_creator_lcm_1 import r1cs_to_qap_times_lcm
+# from zkp.groth16.qap_creator_lcm_1 import create_solution_polynomials
+# from zkp.groth16.qap_creator_lcm_1 import create_divisor_polynomial
 
 g1 = bn128.G1
 g2 = bn128.G2
@@ -80,82 +86,98 @@ def to_matrix_mod(matrix, q):
         target.append(temp_row)
     return target
 
-#TARGET POLYNOMIAL f(x) = x^3 + x +5
+# #TARGET POLYNOMIAL - TEST 1
+# # f(x) = x^3 + x^2 + x + 5
+# r = [1, 4, 89, 16, 64, 16, 80, 84]
+# A = [[0, 1, 0, 0, 0, 0, 0, 0],
+#     [0, 0, 0, 1, 0, 0, 0, 0],
+#     [0, 1, 0, 0, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 1, 1, 0, 0],
+#     [0, 1, 0, 0, 0, 0, 1, 0],
+#     [5, 0, 0, 0, 0, 0, 0, 1]]
+# B = [[0, 1, 0, 0, 0, 0, 0, 0],
+#     [0, 1, 0, 0, 0, 0, 0, 0],
+#     [0, 1, 0, 0, 0, 0, 0, 0],
+#     [1, 0, 0, 0, 0, 0, 0, 0],
+#     [1, 0, 0, 0, 0, 0, 0, 0],
+#     [1, 0, 0, 0, 0, 0, 0, 0]]
+# C = [[0, 0, 0, 1, 0, 0, 0, 0],
+#     [0, 0, 0, 0, 1, 0, 0, 0],
+#     [0, 0, 0, 0, 0, 1, 0, 0],
+#     [0, 0, 0, 0, 0, 0, 1, 0],
+#     [0, 0, 0, 0, 0, 0, 0, 1],
+#     [0, 0, 1, 0, 0, 0, 0, 0]]
 
-# Ap = [
-#     [-60.0, 110.0, -60.0, 10.0],
-#     [96.0, -136.0, 60.0, -8.0],
-#     [0.0, 0.0, 0.0, 0.0],
-#     [-72.0, 114.0, -48.0, 6.0],
-#     [48.0, -84.0, 42.0, -6.0],
-#     [-12.0, 22.0, -12.0, 2.0]
-# ]
+#TARGET POLYNOMIAL - TEST 2
+# f(x) = x^3 + x + 5
 
-# Bp = [
-#     [36.0, -62.0, 30.0, -4.0],
-#     [-24.0, 62.0, -30.0, 4.0],
-#     [0.0, 0.0, 0.0, 0.0],
-#     [0.0, 0.0, 0.0, 0.0],
-#     [0.0, 0.0, 0.0, 0.0],
-#     [0.0, 0.0, 0.0, 0.0]
-# ]
-
-# Cp = [
-#     [0.0, 0.0, 0.0, 0.0],
-#     [0.0, 0.0, 0.0, 0.0],
-#     [-144.0, 264.0, -144.0, 24.0],
-#     [576.0, -624.0, 216.0, -24.0],
-#     [-864.0, 1368.0, -576.0, 72.0],
-#     [576.0, -1008.0, 504.0, -72.0]
-# ]
-
-# Z = [3456.0, -7200.0, 5040.0, -1440.0, 144.0]
-# R = [1, 3, 35, 9, 27, 30]
-
-#TARGET POLYNOMIAL f(x) = x^3 + x^2 + x + 5
-
-Ap = [
-    [-172800.0, 394559.99999999994, -324000.0, 122399.99999999999, -21600.0, 1440.0],
-[1105920.0, -2230272.0000000005, 1612800.0000000002, -529920.0, 80640.0, -4608.0],
-[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-[-518400.0, 1010880.0, -663840.0, 197280.0, -27360.0, 1440.0],
-[-518400.0, 1140480.0, -884160.0, 308160.0, -48959.99999999999, 2880.0],
-[-518400.0, 1140480.0, -884160.0, 308160.0, -48959.99999999999, 2880.0],
-[207360.0, -466559.99999999994, 374399.99999999994, -136800.0, 23040.0, -1440.0],
-[-34560.0, 78912.00000000001, -64800.00000000001, 24480.000000000004, -4320.0, 288.0]
-]
-
-Bp = [
-    [-345600.0, 752832.0, -574560.0, 195839.99999999997, -30239.999999999996, 1727.9999999999998],
-[380160.0, -752832.0000000005, 574560.0, -195839.99999999997, 30240.0, -1727.9999999999998],
-[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-]
-
-Cp = [
-    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-[-1194393600.0, 2727198720.0000005, -2239488000.0000005, 846028800.0000001, -149299200.0, 9953280.0],
-[7166361600.0, -10391224320.000002, 5772902400.000001, -1542758400.0, 199065600.00000003, -9953280.0],
-[-17915904000.0, 34936012800.0, -22942310400.0, 6817996800.0, -945561600.0, 49766400.0],
-[23887872000.0, -50562662400.00001, 37026201600.0, -12043468799.999998, 1791590400.0, -99532800.0],
-[-17915904000.0, 39414988800.0, -30556569600.0, 10650009600.0, -1692057599.9999998, 99532800.0],
-[7166361600.0, -16124313599.999998, 12939263999.999998, -4727808000.0, 796262400.0, -49766400.0],
-]
-
-Z = [720, -1764, 1624, -735, 175, -21, 1]
-R = [1, 3, 44, 9, 27, 9, 36, 39]
+# r = [1, 3, 35, 9, 27, 30]
+# A = [   [0, 1, 0, 0, 0, 0],
+#         [0, 0, 0, 1, 0, 0],
+#         [0, 1, 0, 0, 1, 0],
+#         [5, 0, 0, 0, 0, 1]]
+# B = [
+#     [0, 1, 0, 0, 0, 0],
+#     [0, 1, 0, 0, 0, 0],
+#     [1, 0, 0, 0, 0, 0],
+#     [1, 0, 0, 0, 0, 0]]
+# C = [
+#     [0, 0, 0, 1, 0, 0],
+#     [0, 0, 0, 0, 1, 0],
+#     [0, 0, 0, 0, 0, 1],
+#     [0, 0, 1, 0, 0, 0]]
 
 
-Ax = [ [FR(int(num)) for num in vec] for vec in Ap ]
-Bx = [ [FR(int(num)) for num in vec] for vec in Bp ]
-Cx = [ [FR(int(num)) for num in vec] for vec in Cp ]
-Zx = [ FR(int(num)) for num in Z ]
-Rx = [ FR(int(num)) for num in R ]
+#TARGET POLYNOMIAL - TEST 3
+# f(x) = 2 * x^3 + 2 * x^2 + x + 5
+r = [1, 2, 31, 4, 8, 16, 4, 8, 24, 26]
+A = [[0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+[2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+[2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 1, 0, 1, 0, 0],
+[0, 1, 0, 0, 0, 0, 0, 0, 1, 0],
+[5, 0, 0, 0, 0, 0, 0, 0, 0, 1]]
+B = [[0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+[0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[1, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+C = [[0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+[0, 0, 1, 0, 0, 0, 0, 0, 0, 0]]
+
+
+Ap, Bp, Cp, Z = r1cs_to_qap_times_lcm(A, B, C)
+print('Ap')
+for x in Ap: print(x)
+print('Bp')
+for x in Bp: print(x)
+print('Cp')
+for x in Cp: print(x)
+print('Z')
+print(Z)
+R = r
+
+Ax = [ [FR(round(num)) for num in vec] for vec in Ap ]
+Bx = [ [FR(round(num)) for num in vec] for vec in Bp ]
+Cx = [ [FR(round(num)) for num in vec] for vec in Cp ]
+Zx = [ FR(round(num)) for num in Z ]
+Rx = [ FR(round(num)) for num in R ]
+
+print("Ax : {}".format(Ax))
+print("Bx : {}".format(Bx))
+print("Cx : {}".format(Cx))
+print("Zx : {}".format(Zx))
 
 # Rax = [multiply_polys(Rx, vec)for vec in Ax]
 # Rbx = [multiply_polys(Rx, vec)for vec in Bx]
@@ -175,13 +197,21 @@ Rax = multiply_vec_matrix(R, Ax)
 Rbx = multiply_vec_matrix(R, Bx)
 Rcx = multiply_vec_matrix(R, Cx)
 
+print('Rax', Rax)
+print('Rbx', Rbx)
+print('Rcx', Rcx)
+
+
 #Px = Rax * Rbx - Rcx
 Px = subtract_polys(multiply_polys(Rax, Rbx), Rcx)
+print('Px', Px)
 
+# Px = Hx.Zx
 q, r = div_polys(Px, Zx)
-
+print('q', q)
+print('r', r)
 Hx = q
-
+print('r', r)
 # r should be zero
 
 #q = [14592161914559516814830937163504850059130874104865215775126025263096817472385,
@@ -193,12 +223,25 @@ Hx = q
 #  0]
 
 #r = [0, 0, 0, 0]
+print('//---------------')
 
-alpha = FR(3926)
-beta = FR(3604)
-gamma = FR(2971)
-delta = FR(1357)
-x_val = FR(3721)
+# alpha = FR(3926)
+# beta = FR(3604)
+# gamma = FR(2971)
+# delta = FR(1357)
+# x_val = FR(3721)
+
+# alpha = FR(718946396703)
+# beta = FR(238324186104)
+# gamma = FR(968267494313)
+# delta = FR(730816178932)
+# x_val = FR(688296554963)
+
+alpha = FR(942489720369)
+beta = FR(249472381224)
+delta = FR(699936090831)
+gamma = FR(288797827954)
+x_val = FR(482323349322)
 
 # alpha = FR(randint(0, bn128.curve_order))
 # beta = FR(randint(0, bn128.curve_order))
@@ -207,6 +250,12 @@ x_val = FR(3721)
 # x_val = FR(randint(0, bn128.curve_order))
 
 tau = [alpha, beta, gamma, delta, x_val]
+
+print('alpha', alpha)
+print('beta', beta)
+print('gamma', gamma)
+print('delta', delta)
+print('x_val', x_val)
 
 Ax_val = []
 Bx_val = []
@@ -227,6 +276,12 @@ for i in range(len(Cx)):
 Zx_val = eval_poly(Zx, x_val)
 Hx_val = eval_poly(Hx, x_val)
 
+print('Ax_val',Ax_val)
+print('Bx_val',Bx_val)
+print('Cx_val',Cx_val)
+print('Zx_val',Zx_val)
+
+
 #numGates = len(Ax.columns())
 #numWires = len(Ax.rows())
 
@@ -234,6 +289,8 @@ numGates = len(Ax[0])
 numWires = len(Ax)
 
 sigma1_1 = [mult(g1, int(alpha)), mult(g1, int(beta)), mult(g1, int(delta))]
+
+print('sigma1_1',sigma1_1)
 
 sigma1_2 = []
 sigma1_3 = []
@@ -248,6 +305,8 @@ for i in range(numGates):
     val = x_val ** i
     sigma1_2.append(mult(g1, int(val)))
 
+print('sigma1_2',sigma1_2)
+
 #sigma1_3
 VAL = [FR(0)]*numWires
 for i in range(numWires):
@@ -258,6 +317,8 @@ for i in range(numWires):
     else:
         sigma1_3.append((FQ(0), FQ(0)))
 
+print('sigma1_3',sigma1_3)
+
 #sigma1_4
 for i in range(numWires):
     if i in [0, numWires-1]:
@@ -266,14 +327,20 @@ for i in range(numWires):
         val = (beta*Ax_val[i] + alpha*Bx_val[i] + Cx_val[i]) / delta
         sigma1_4.append(mult(g1, int(val)))
 
+print('sigma1_4',sigma1_4)
+
 #sigma1_5
 for i in range(numGates-1):
     sigma1_5.append(mult(g1, int((x_val**i * Zx_val) / delta)))
+
+print('sigma1_5',sigma1_5)
 
 #sigma2-2
 for i in range(numGates):
     # sigma2_2.append(h*(Z(x_val^i)))
     sigma2_2.append(mult(g2, int(x_val**i)))
+
+print('sigma2-2',sigma2_2)
 
 ##CRS validity check
 
@@ -304,22 +371,39 @@ print(lhs == rhs)
 
 ### 2. PROVING ###
 
-r = FR(4106)
-s = FR(4565)
+# r = FR(4106)
+# s = FR(4565)
+
+r = FR(697899094451)
+s = FR(294858740669)
 
 # r = FR(randint(0, bn128.curve_order))
 # s = FR(randint(0, bn128.curve_order))
 
+print("//-----Build Proof_A, g1 based  ")
+print("pointInf1", pointInf1)
+print("sigma1_1", sigma1_1)
+print("sigma1_2", sigma1_2)
+print("numGates", numGates)
+print("Ax", Ax)
+print("Rx", Rx)
+print("r", r)
+
 #Build Proof_A, g1 based
+print('numGates',numGates )
+print('numWires',numWires )
+print("pointInf1", pointInf1)
+
 proof_A = sigma1_1[0]
 for i in range(numWires):
     temp = pointInf1
     for j in range(numGates):
         temp = add(temp, mult(sigma1_2[j], int(Ax[i][j])))
     proof_A = add(proof_A, mult(temp, int(Rx[i])))
+
 proof_A = add(proof_A, mult(sigma1_1[2], int(r)))
-
-
+print("** proof_A", proof_A)
+print("//-------------------  ")
 #Build proof_B, g2 based
 proof_B = sigma2_1[0]
 for i in range(numWires):
