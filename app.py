@@ -116,7 +116,7 @@ def make_expr_dict(ast_value):
         elif isinstance(ast_value.op, ast.Div):
             op = '/'
         elif isinstance(ast_value.op, ast.Pow):
-            op = '*'
+            op = '**'
         
         return {"left" : left, "op": op, "right" : right}
 
