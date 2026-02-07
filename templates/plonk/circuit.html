@@ -1,0 +1,132 @@
+{% extends 'plonk/base-plonk.html' %}
+
+{% block content_in %}
+<h2>PLONK - Circuit</h2>
+
+<section>
+    <h4>1. Load Example Circuit</h4>
+    <p>
+        <button type="button" onclick="plonk_load_example()" class="btn btn-primary">
+            <form action="{{url_for('plonk.circuit_load_example')}}" method="post" id="plonk-load-example-form">
+                Load x&sup3; + x + 5 = 35
+            </form>
+        </button>
+        <button type="button" onclick="plonk_circuit_clear()" class="btn btn-primary">
+            <form action="{{url_for('plonk.circuit_clear')}}" method="post" id="plonk-circuit-clear-form">
+                Clear All
+            </form>
+        </button>
+    </p>
+</section>
+
+{% if gates_table %}
+<section>
+    <h4>2. Gate Table</h4>
+    <p>
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>Gate #</th>
+                <th>Type</th>
+                <th>q_L</th>
+                <th>q_R</th>
+                <th>q_O</th>
+                <th>q_M</th>
+                <th>q_C</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for g in gates_table %}
+                <tr>
+                    <td>{{g.index}}</td>
+                    <td>{{g.type}}</td>
+                    <td>{{sn(g.q_L)}}</td>
+                    <td>{{sn(g.q_R)}}</td>
+                    <td>{{sn(g.q_O)}}</td>
+                    <td>{{sn(g.q_M)}}</td>
+                    <td>{{sn(g.q_C)}}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </p>
+    <p><b>Gate equation:</b> q_L &middot; a + q_R &middot; b + q_O &middot; c + q_M &middot; (a &middot; b) + q_C = 0</p>
+</section>
+{% endif %}
+
+{% if copy_constraints %}
+<section>
+    <h4>3. Copy Constraints (Permutation)</h4>
+    <p>
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Left</th>
+                <th>==</th>
+                <th>Right</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for cc in copy_constraints %}
+                <tr>
+                    <td>{{loop.index0}}</td>
+                    <td>{{cc.left}}</td>
+                    <td>==</td>
+                    <td>{{cc.right}}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </p>
+</section>
+{% endif %}
+
+{% if witness_table %}
+<section>
+    <h4>4. Witness Table</h4>
+    <p>
+        <button type="button" onclick="plonk_check_gates()" class="btn btn-primary">
+            <form action="{{url_for('plonk.circuit_check_gates')}}" method="post" id="plonk-check-gates-form">
+                Check Gate Constraints
+            </form>
+        </button>
+    </p>
+    <p>
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th>Gate #</th>
+                <th>a</th>
+                <th>b</th>
+                <th>c</th>
+                {% if gate_check %}
+                <th>Check</th>
+                {% endif %}
+            </tr>
+            </thead>
+            <tbody>
+            {% for w in witness_table %}
+                <tr>
+                    <td>{{w.index}}</td>
+                    <td>{{w.a}}</td>
+                    <td>{{w.b}}</td>
+                    <td>{{w.c}}</td>
+                    {% if gate_check %}
+                    <td>
+                        {% if gate_check[loop.index0].ok %}
+                            <span style="color:green">OK</span>
+                        {% else %}
+                            <span style="color:red">FAIL</span>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </p>
+</section>
+{% endif %}
+
+{% endblock %}

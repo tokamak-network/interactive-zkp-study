@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% from 'macros.j2' import shorten_numbers_list as snl %}
+{% from 'macros.j2' import shorten_number as sn %}
+
+{% block content %}
+
+<section>
+    <ul class="nav">
+        <li class="nav-item">
+          <a class="nav-link" href="{{url_for('plonk.circuit_page')}}">Circuit</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{url_for('plonk.setup_page')}}">Setup</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{url_for('plonk.proving_page')}}">Proving</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{url_for('plonk.verifying_page')}}">Verifying</a>
+        </li>
+      </ul>
+</section>
+
+{% block content_in %}{% endblock %}
+
+{% endblock %}

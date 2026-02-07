@@ -1,0 +1,118 @@
+{% extends 'plonk/base-plonk.html' %}
+
+{% block content_in %}
+<h2>PLONK - Setup</h2>
+
+<section>
+    <h4>1. SRS Generation (Trusted Setup)</h4>
+    <p>
+        <form action="{{url_for('plonk.setup_srs')}}" method="post" id="plonk-srs-form">
+            <div class="row">
+                <div class="col">
+                    <label>Seed:</label>
+                    <input type="number" name="srs-seed" placeholder="12345" value="12345">
+                </div>
+            </div>
+        </form>
+        <button type="button" onclick="plonk_generate_srs()" class="btn btn-primary">Generate SRS</button>
+        <button type="button" onclick="plonk_clear_srs()" class="btn btn-primary">
+            <form action="{{url_for('plonk.setup_clear_srs')}}" method="post" id="plonk-clear-srs-form">
+                Clear SRS
+            </form>
+        </button>
+    </p>
+
+    {% if srs_info %}
+    <p>
+        <table class="table table-bordered">
+            <tbody>
+                <tr><th>Seed</th><td>{{srs_info.seed}}</td></tr>
+                <tr><th>Max Degree</th><td>{{srs_info.max_degree}}</td></tr>
+                <tr><th>G1 Powers Count</th><td>{{srs_info.g1_count}}</td></tr>
+                <tr>
+                    <th>G1 Samples</th>
+                    <td>
+                        {% for s in srs_info.g1_samples %}
+                            [&tau;^{{loop.index0}}]G1 = {{s}}<br>
+                        {% endfor %}
+                    </td>
+                </tr>
+                <tr><th>[1]G2</th><td>{{srs_info.g2_0}}</td></tr>
+                <tr><th>[&tau;]G2</th><td>{{srs_info.g2_1}}</td></tr>
+            </tbody>
+        </table>
+    </p>
+    {% endif %}
+</section>
+
+{% if srs_info %}
+<section>
+    <h4>2. Preprocessing</h4>
+    <p>
+        <button type="button" onclick="plonk_preprocess()" class="btn btn-primary">
+            <form action="{{url_for('plonk.setup_preprocess')}}" method="post" id="plonk-preprocess-form">
+                Run Preprocess
+            </form>
+        </button>
+        <button type="button" onclick="plonk_clear_preprocess()" class="btn btn-primary">
+            <form action="{{url_for('plonk.setup_clear_preprocess')}}" method="post" id="plonk-clear-preprocess-form">
+                Clear Preprocess
+            </form>
+        </button>
+    </p>
+
+    {% if preprocess_info %}
+    <p>
+        <table class="table table-bordered">
+            <tbody>
+                <tr><th>n (domain size)</th><td>{{preprocess_info.n}}</td></tr>
+                <tr><th>&omega; (root of unity)</th><td>{{preprocess_info.omega}}</td></tr>
+                <tr>
+                    <th>Domain H</th>
+                    <td>
+                        {% for d in preprocess_info.domain %}
+                            &omega;^{{loop.index0}} = {{d}}<br>
+                        {% endfor %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </p>
+
+    <h5>Selector Commitments</h5>
+    <p>
+        <table class="table table-bordered">
+            <thead>
+            <tr><th>Selector</th><th>Commitment</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>[q_L]&sub1;</td><td>{{preprocess_info.q_l_comm}}</td></tr>
+                <tr><td>[q_R]&sub1;</td><td>{{preprocess_info.q_r_comm}}</td></tr>
+                <tr><td>[q_O]&sub1;</td><td>{{preprocess_info.q_o_comm}}</td></tr>
+                <tr><td>[q_M]&sub1;</td><td>{{preprocess_info.q_m_comm}}</td></tr>
+                <tr><td>[q_C]&sub1;</td><td>{{preprocess_info.q_c_comm}}</td></tr>
+            </tbody>
+        </table>
+    </p>
+
+    <h5>Permutation Commitments</h5>
+    <p>
+        <table class="table table-bordered">
+            <thead>
+            <tr><th>Permutation</th><th>Commitment</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>[S_&sigma;1]&sub1;</td><td>{{preprocess_info.s_sigma1_comm}}</td></tr>
+                <tr><td>[S_&sigma;2]&sub1;</td><td>{{preprocess_info.s_sigma2_comm}}</td></tr>
+                <tr><td>[S_&sigma;3]&sub1;</td><td>{{preprocess_info.s_sigma3_comm}}</td></tr>
+            </tbody>
+        </table>
+    </p>
+
+    <h5>Permutation &sigma; Array</h5>
+    <p>&sigma; = {{preprocess_info.sigma}}</p>
+    {% endif %}
+</section>
+{% endif %}
+
+{% endblock %}

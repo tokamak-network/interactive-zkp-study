@@ -1,0 +1,83 @@
+{% extends 'plonk/base-plonk.html' %}
+
+{% block content_in %}
+<h2>PLONK - Verifying</h2>
+
+{% if proof_summary %}
+<section>
+    <h4>1. Proof Elements</h4>
+    <table class="table table-bordered">
+        <thead><tr><th>Element</th><th>Value</th></tr></thead>
+        <tbody>
+            <tr><td>[a]&sub1;</td><td>{{proof_summary.a_comm}}</td></tr>
+            <tr><td>[b]&sub1;</td><td>{{proof_summary.b_comm}}</td></tr>
+            <tr><td>[c]&sub1;</td><td>{{proof_summary.c_comm}}</td></tr>
+            <tr><td>[z]&sub1;</td><td>{{proof_summary.z_comm}}</td></tr>
+            <tr><td>[t_lo]&sub1;</td><td>{{proof_summary.t_lo_comm}}</td></tr>
+            <tr><td>[t_mid]&sub1;</td><td>{{proof_summary.t_mid_comm}}</td></tr>
+            <tr><td>[t_hi]&sub1;</td><td>{{proof_summary.t_hi_comm}}</td></tr>
+            <tr><td>&#257;, b&#772;, c&#772;</td><td>{{proof_summary.a_eval}}, {{proof_summary.b_eval}}, {{proof_summary.c_eval}}</td></tr>
+            <tr><td>s&#772;&sigma;1, s&#772;&sigma;2</td><td>{{proof_summary.s_sigma1_eval}}, {{proof_summary.s_sigma2_eval}}</td></tr>
+            <tr><td>z&#772;&omega;</td><td>{{proof_summary.z_omega_eval}}</td></tr>
+            <tr><td>r_eval</td><td>{{proof_summary.r_eval}}</td></tr>
+            <tr><td>[W&zeta;]&sub1;</td><td>{{proof_summary.W_zeta_comm}}</td></tr>
+            <tr><td>[W&zeta;&omega;]&sub1;</td><td>{{proof_summary.W_zeta_omega_comm}}</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h4>2. Verify</h4>
+    <p>
+        <button type="button" onclick="plonk_verify()" class="btn btn-primary">
+            <form action="{{url_for('plonk.verifying_verify')}}" method="post" id="plonk-verify-form">
+                Run Verification
+            </form>
+        </button>
+        <button type="button" onclick="plonk_verify_clear()" class="btn btn-primary">
+            <form action="{{url_for('plonk.verifying_clear')}}" method="post" id="plonk-verify-clear-form">
+                Clear
+            </form>
+        </button>
+    </p>
+
+    {% if verify_result %}
+    <h5>Fiat-Shamir Challenge Replay</h5>
+    <table class="table table-bordered">
+        <thead><tr><th>Challenge</th><th>Value</th></tr></thead>
+        <tbody>
+            <tr><td>&beta;</td><td>{{verify_result.challenges.beta}}</td></tr>
+            <tr><td>&gamma;</td><td>{{verify_result.challenges.gamma}}</td></tr>
+            <tr><td>&alpha;</td><td>{{verify_result.challenges.alpha}}</td></tr>
+            <tr><td>&zeta;</td><td>{{verify_result.challenges.zeta}}</td></tr>
+            <tr><td>v</td><td>{{verify_result.challenges.v}}</td></tr>
+            <tr><td>u</td><td>{{verify_result.challenges.u}}</td></tr>
+        </tbody>
+    </table>
+
+    <h5>Public Values</h5>
+    <table class="table table-bordered">
+        <thead><tr><th>Value</th><th>Result</th></tr></thead>
+        <tbody>
+            <tr><td>Z_H(&zeta;) = &zeta;^n - 1</td><td>{{verify_result.public_values.zh_zeta}}</td></tr>
+            <tr><td>L&sub1;(&zeta;)</td><td>{{verify_result.public_values.l1_zeta}}</td></tr>
+            <tr><td>PI(&zeta;)</td><td>{{verify_result.public_values.pi_zeta}}</td></tr>
+        </tbody>
+    </table>
+
+    <h5>Pairing Check: e([A], [&tau;]&sub2;) == e([B], G&sub2;)</h5>
+    {% if verify_result.result %}
+        <p style="color:green; font-size:24px"><b>VERIFIED: TRUE</b></p>
+    {% else %}
+        <p style="color:red; font-size:24px"><b>VERIFIED: FALSE</b></p>
+    {% endif %}
+    {% endif %}
+</section>
+
+{% else %}
+<section>
+    <p>No proof available. Complete the <b>Proving</b> stage first.</p>
+</section>
+{% endif %}
+
+{% endblock %}

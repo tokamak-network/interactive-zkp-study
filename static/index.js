@@ -197,3 +197,69 @@ async function generate_proof(){
 async function groth_verify(){
     document.getElementById('groth-verify-form').submit();
 }
+
+// ─── PLONK Functions ───
+
+async function plonk_load_example(){
+    document.getElementById('plonk-load-example-form').submit();
+}
+
+async function plonk_circuit_clear(){
+    document.getElementById('plonk-circuit-clear-form').submit();
+}
+
+async function plonk_check_gates(){
+    document.getElementById('plonk-check-gates-form').submit();
+}
+
+async function plonk_generate_srs(){
+    document.getElementById('plonk-srs-form').submit();
+}
+
+async function plonk_clear_srs(){
+    document.getElementById('plonk-clear-srs-form').submit();
+}
+
+async function plonk_preprocess(){
+    document.getElementById('plonk-preprocess-form').submit();
+}
+
+async function plonk_clear_preprocess(){
+    document.getElementById('plonk-clear-preprocess-form').submit();
+}
+
+async function plonk_round1(){
+    document.getElementById('plonk-round1-form').submit();
+}
+
+async function plonk_round2(){
+    document.getElementById('plonk-round2-form').submit();
+}
+
+async function plonk_round3(){
+    document.getElementById('plonk-round3-form').submit();
+}
+
+async function plonk_round4(){
+    document.getElementById('plonk-round4-form').submit();
+}
+
+async function plonk_round5(){
+    document.getElementById('plonk-round5-form').submit();
+}
+
+async function plonk_run_all(){
+    document.getElementById('plonk-run-all-form').submit();
+}
+
+async function plonk_proving_clear(){
+    document.getElementById('plonk-proving-clear-form').submit();
+}
+
+async function plonk_verify(){
+    document.getElementById('plonk-verify-form').submit();
+}
+
+async function plonk_verify_clear(){
+    document.getElementById('plonk-verify-clear-form').submit();
+}

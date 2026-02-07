@@ -79,6 +79,11 @@ G2 = bn128.G2
 app = Flask(__name__)
 app.secret_key = "key"
 
+# PLONK Blueprint 등록
+from plonk_routes import plonk_bp, init_plonk_bp
+init_plonk_bp(DB)
+app.register_blueprint(plonk_bp)
+
 
 ## Groth16 Related Functions ##
 
@@ -1433,3 +1438,7 @@ def groth_verify():
             return redirect(url_for('main_verifying'))
     else:
         return redirect(url_for('main_verifying'))
+
+
+if __name__ == "__main__":
+    app.run(port=5001, debug=True)

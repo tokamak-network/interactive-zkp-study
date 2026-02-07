@@ -1,0 +1,189 @@
+{% extends 'plonk/base-plonk.html' %}
+
+{% block content_in %}
+<h2>PLONK - Proving (5 Rounds)</h2>
+
+{% if not has_prereqs %}
+<section>
+    <p style="color:red"><b>Circuit, SRS, Preprocess</b> must be completed first.</p>
+</section>
+{% else %}
+
+<section>
+    <h4>Controls</h4>
+    <p>
+        <button type="button" onclick="plonk_run_all()" class="btn btn-primary">
+            <form action="{{url_for('plonk.proving_run_all')}}" method="post" id="plonk-run-all-form">
+                Run All 5 Rounds
+            </form>
+        </button>
+        <button type="button" onclick="plonk_proving_clear()" class="btn btn-primary">
+            <form action="{{url_for('plonk.proving_clear')}}" method="post" id="plonk-proving-clear-form">
+                Clear Prover Data
+            </form>
+        </button>
+    </p>
+</section>
+
+<!-- Round 1 -->
+<section>
+    <h4>Round 1: Witness Polynomial Commitments</h4>
+    <p>
+        <button type="button" onclick="plonk_round1()" class="btn btn-primary">
+            <form action="{{url_for('plonk.proving_round1')}}" method="post" id="plonk-round1-form">
+                Execute Round 1
+            </form>
+        </button>
+    </p>
+    {% if r1_info %}
+    <p>Prover &rarr; Verifier: [a]&sub1;, [b]&sub1;, [c]&sub1;</p>
+    <table class="table table-bordered">
+        <thead><tr><th>Commitment</th><th>Value</th></tr></thead>
+        <tbody>
+            <tr><td>[a]&sub1;</td><td>{{r1_info.a_comm}}</td></tr>
+            <tr><td>[b]&sub1;</td><td>{{r1_info.b_comm}}</td></tr>
+            <tr><td>[c]&sub1;</td><td>{{r1_info.c_comm}}</td></tr>
+        </tbody>
+    </table>
+    {% endif %}
+</section>
+
+<!-- Round 2 -->
+{% if r1_info %}
+<section>
+    <h4>Round 2: Permutation Accumulator z(x)</h4>
+    <p>
+        <button type="button" onclick="plonk_round2()" class="btn btn-primary">
+            <form action="{{url_for('plonk.proving_round2')}}" method="post" id="plonk-round2-form">
+                Execute Round 2
+            </form>
+        </button>
+    </p>
+    {% if r2_info %}
+    <p>Fiat-Shamir challenges: &beta; = {{r2_info.beta}}, &gamma; = {{r2_info.gamma}}</p>
+    <table class="table table-bordered">
+        <thead><tr><th>Item</th><th>Value</th></tr></thead>
+        <tbody>
+            <tr><td>[z]&sub1;</td><td>{{r2_info.z_comm}}</td></tr>
+            <tr>
+                <td>z(&omega;^i) evaluations</td>
+                <td>
+                    {% for e in r2_info.z_evals %}
+                        z(&omega;^{{loop.index0}}) = {{e}}<br>
+                    {% endfor %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    {% endif %}
+</section>
+{% endif %}
+
+<!-- Round 3 -->
+{% if r2_info %}
+<section>
+    <h4>Round 3: Quotient Polynomial t(x)</h4>
+    <p>
+        <button type="button" onclick="plonk_round3()" class="btn btn-primary">
+            <form action="{{url_for('plonk.proving_round3')}}" method="post" id="plonk-round3-form">
+                Execute Round 3
+            </form>
+        </button>
+    </p>
+    {% if r3_info %}
+    <p>Fiat-Shamir challenge: &alpha; = {{r3_info.alpha}}</p>
+    <table class="table table-bordered">
+        <thead><tr><th>Commitment</th><th>Value</th></tr></thead>
+        <tbody>
+            <tr><td>[t_lo]&sub1;</td><td>{{r3_info.t_lo_comm}}</td></tr>
+            <tr><td>[t_mid]&sub1;</td><td>{{r3_info.t_mid_comm}}</td></tr>
+            <tr><td>[t_hi]&sub1;</td><td>{{r3_info.t_hi_comm}}</td></tr>
+        </tbody>
+    </table>
+    {% endif %}
+</section>
+{% endif %}
+
+<!-- Round 4 -->
+{% if r3_info %}
+<section>
+    <h4>Round 4: Polynomial Evaluations at &zeta;</h4>
+    <p>
+        <button type="button" onclick="plonk_round4()" class="btn btn-primary">
+            <form action="{{url_for('plonk.proving_round4')}}" method="post" id="plonk-round4-form">
+                Execute Round 4
+            </form>
+        </button>
+    </p>
+    {% if r4_info %}
+    <p>Fiat-Shamir challenge: &zeta; = {{r4_info.zeta}}</p>
+    <table class="table table-bordered">
+        <thead><tr><th>Evaluation</th><th>Value</th></tr></thead>
+        <tbody>
+            <tr><td>&#257; = a(&zeta;)</td><td>{{r4_info.a_eval}}</td></tr>
+            <tr><td>b&#772; = b(&zeta;)</td><td>{{r4_info.b_eval}}</td></tr>
+            <tr><td>c&#772; = c(&zeta;)</td><td>{{r4_info.c_eval}}</td></tr>
+            <tr><td>s&#772;&sigma;1 = S&sigma;1(&zeta;)</td><td>{{r4_info.s_sigma1_eval}}</td></tr>
+            <tr><td>s&#772;&sigma;2 = S&sigma;2(&zeta;)</td><td>{{r4_info.s_sigma2_eval}}</td></tr>
+            <tr><td>z&#772;&omega; = z(&zeta;&middot;&omega;)</td><td>{{r4_info.z_omega_eval}}</td></tr>
+        </tbody>
+    </table>
+    {% endif %}
+</section>
+{% endif %}
+
+<!-- Round 5 -->
+{% if r4_info %}
+<section>
+    <h4>Round 5: Linearization + Opening Proofs</h4>
+    <p>
+        <button type="button" onclick="plonk_round5()" class="btn btn-primary">
+            <form action="{{url_for('plonk.proving_round5')}}" method="post" id="plonk-round5-form">
+                Execute Round 5
+            </form>
+        </button>
+    </p>
+    {% if r5_info %}
+    <p>Fiat-Shamir challenge: v = {{r5_info.v}}</p>
+    <table class="table table-bordered">
+        <thead><tr><th>Item</th><th>Value</th></tr></thead>
+        <tbody>
+            <tr><td>r_eval = r(&zeta;)</td><td>{{r5_info.r_eval}}</td></tr>
+            <tr><td>[W&zeta;]&sub1;</td><td>{{r5_info.W_zeta_comm}}</td></tr>
+            <tr><td>[W&zeta;&omega;]&sub1;</td><td>{{r5_info.W_zeta_omega_comm}}</td></tr>
+        </tbody>
+    </table>
+    {% endif %}
+</section>
+{% endif %}
+
+<!-- Proof Summary -->
+{% if proof_summary %}
+<section>
+    <h4>Complete Proof (16 elements)</h4>
+    <table class="table table-bordered">
+        <thead><tr><th>Round</th><th>Element</th><th>Value</th></tr></thead>
+        <tbody>
+            <tr><td rowspan="3">R1</td><td>[a]&sub1;</td><td>{{proof_summary.a_comm}}</td></tr>
+            <tr><td>[b]&sub1;</td><td>{{proof_summary.b_comm}}</td></tr>
+            <tr><td>[c]&sub1;</td><td>{{proof_summary.c_comm}}</td></tr>
+            <tr><td>R2</td><td>[z]&sub1;</td><td>{{proof_summary.z_comm}}</td></tr>
+            <tr><td rowspan="3">R3</td><td>[t_lo]&sub1;</td><td>{{proof_summary.t_lo_comm}}</td></tr>
+            <tr><td>[t_mid]&sub1;</td><td>{{proof_summary.t_mid_comm}}</td></tr>
+            <tr><td>[t_hi]&sub1;</td><td>{{proof_summary.t_hi_comm}}</td></tr>
+            <tr><td rowspan="6">R4</td><td>&#257;</td><td>{{proof_summary.a_eval}}</td></tr>
+            <tr><td>b&#772;</td><td>{{proof_summary.b_eval}}</td></tr>
+            <tr><td>c&#772;</td><td>{{proof_summary.c_eval}}</td></tr>
+            <tr><td>s&#772;&sigma;1</td><td>{{proof_summary.s_sigma1_eval}}</td></tr>
+            <tr><td>s&#772;&sigma;2</td><td>{{proof_summary.s_sigma2_eval}}</td></tr>
+            <tr><td>z&#772;&omega;</td><td>{{proof_summary.z_omega_eval}}</td></tr>
+            <tr><td rowspan="3">R5</td><td>r_eval</td><td>{{proof_summary.r_eval}}</td></tr>
+            <tr><td>[W&zeta;]&sub1;</td><td>{{proof_summary.W_zeta_comm}}</td></tr>
+            <tr><td>[W&zeta;&omega;]&sub1;</td><td>{{proof_summary.W_zeta_omega_comm}}</td></tr>
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
+{% endif %}
+{% endblock %}
