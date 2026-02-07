@@ -8,11 +8,11 @@ from py_ecc import bn128
 import ast
 
 from zkp.groth16.code_to_r1cs import (
-    parse, 
-    extract_inputs_and_body, 
-    flatten_body, 
-    initialize_symbol, 
-    get_var_placement, 
+    parse,
+    extract_inputs_and_body,
+    flatten_body,
+    initialize_symbol,
+    get_var_placement,
     flatcode_to_r1cs,
     assign_variables
 )
@@ -27,12 +27,7 @@ from zkp.groth16.qap_creator_lcm import (
 )
 
 from zkp.groth16.poly_utils import (
-    # _multiply_polys,
     _add_polys,
-    # _subtract_polys,
-    # _div_polys,
-    # _eval_poly,
-    # _multiply_vec_matrix,
     _multiply_vec_vec,
     getNumWires,
     getNumGates,
@@ -71,8 +66,7 @@ from zkp.groth16.verifying import (
 from tinydb import TinyDB, Query
 from tinydb.storages import MemoryStorage
 
-# DB = TinyDB(storage=MemoryStorage) #Memony DB
-DB = TinyDB('db.json')               #Storage DB
+DB = TinyDB('db.json')
 
 DATA = Query()
 
@@ -87,7 +81,17 @@ app.secret_key = "key"
 
 
 ## Groth16 Related Functions ##
+
 def make_target_dict(ast_obj):
+    """AST의 Assign 또는 Return 노드를 딕셔너리로 변환한다.
+
+    Args:
+        ast_obj: ast.Assign 또는 ast.Return 노드.
+
+    Returns:
+        dict: Assign인 경우 {"targets": 변수명, "value": 표현식 딕셔너리},
+              Return인 경우 {"value": 표현식 딕셔너리}.
+    """
     if isinstance(ast_obj, ast.Assign):
         assert len(ast_obj.targets) == 1 and isinstance(ast_obj.targets[0], ast.Name)
         target = ast_obj.targets[0].id
@@ -98,15 +102,23 @@ def make_target_dict(ast_obj):
         return {"value" : make_expr_dict(ast_value)}
 
 def make_expr_dict(ast_value):
+    """AST 표현식 노드를 재귀적으로 딕셔너리 형태로 변환한다.
+
+    Args:
+        ast_value: ast.Name, ast.Constant, 또는 ast.BinOp 노드.
+
+    Returns:
+        str | int | dict: Name이면 변수명(str), Constant이면 숫자값(int),
+                          BinOp이면 {"left": ..., "op": 연산자, "right": ...} 딕셔너리.
+    """
     if isinstance(ast_value, ast.Name):
         return ast_value.id
     elif isinstance(ast_value, ast.Constant):
         return ast_value.n
     elif isinstance(ast_value, ast.BinOp):
-        
         left = make_expr_dict(ast_value.left)
         right = make_expr_dict(ast_value.right)
-        
+
         if isinstance(ast_value.op, ast.Add):
             op = '+'
         elif isinstance(ast_value.op, ast.Mult):
@@ -117,7 +129,7 @@ def make_expr_dict(ast_value):
             op = '/'
         elif isinstance(ast_value.op, ast.Pow):
             op = '*'
-        
+
         return {"left" : left, "op": op, "right" : right}
 
 DEFAULT_CODE = """
@@ -127,97 +139,110 @@ def qeval(x):
 
 @app.route("/", methods=["POST","GET"])
 def main():
-    
+    """메인 페이지. DB에서 computation 단계 데이터를 조회하여 렌더링한다.
+
+    Input:
+        DB에서 groth.computation.* 타입의 데이터를 조회 (code, ast_obj, flatcode,
+        variables, abc, inputs, user_inputs, r_values, qap, qap_lcm, qap_fr, fr_modulus).
+
+    Returns:
+        렌더링된 groth16/computation.html 템플릿 (각 데이터를 템플릿 변수로 전달).
+    """
     code_search = DB.search(DATA.type == "groth.computation.code")
-    if code_search == []: user_code = None 
+    if code_search == []: user_code = None
     else: user_code = code_search[0]["code"]
 
-    # ast_obj = session.get('ast_obj')
     ast_obj_search = DB.search(DATA.type == "groth.computation.ast_obj")
-    if ast_obj_search == []: ast_obj = None 
+    if ast_obj_search == []: ast_obj = None
     else: ast_obj = ast_obj_search[0]["ast_obj"]
 
-
-    # flatcode = session.get('flatcode')
     flatcode_search = DB.search(DATA.type == "groth.computation.flatcode")
-    if flatcode_search == []: flatcode = None 
+    if flatcode_search == []: flatcode = None
     else: flatcode = flatcode_search[0]["flatcode"]
 
-    # variables = session.get('variables')
     variables_search = DB.search(DATA.type == "groth.computation.variables")
-    if variables_search == []: variables = None 
+    if variables_search == []: variables = None
     else: variables = variables_search[0]["variables"]
 
-    # abc = session.get('abc')
     abc_search = DB.search(DATA.type == "groth.computation.abc")
-    if abc_search == []: abc = None 
+    if abc_search == []: abc = None
     else: abc = abc_search[0]["abc"]
 
-    # inputs = session.get('inputs')
     inputs_search = DB.search(DATA.type == "groth.computation.inputs")
-    if inputs_search == []: inputs = None 
+    if inputs_search == []: inputs = None
     else: inputs = inputs_search[0]["inputs"]
-    
-    # user_inputs = session.get('user_inputs')
+
     user_inputs_search = DB.search(DATA.type == "groth.computation.user_inputs")
-    if user_inputs_search == []: user_inputs = None 
+    if user_inputs_search == []: user_inputs = None
     else: user_inputs = user_inputs_search[0]["user_inputs"]
-    
-    # r_values = session.get('r_values')
+
     r_values_search = DB.search(DATA.type == "groth.computation.r_values")
-    if r_values_search == []: r_values = None 
+    if r_values_search == []: r_values = None
     else: r_values = r_values_search[0]["r_values"]
 
-    # qap = session.get('qap')
     qap_search = DB.search(DATA.type == "groth.computation.qap")
-    if qap_search == []: qap = None 
+    if qap_search == []: qap = None
     else: qap = qap_search[0]["qap"]
-    
-    # qap_lcm = session.get('qap_lcm')
+
     qap_lcm_search = DB.search(DATA.type == "groth.computation.qap_lcm")
-    if qap_lcm_search == []: qap_lcm = None 
+    if qap_lcm_search == []: qap_lcm = None
     else: qap_lcm = qap_lcm_search[0]["qap_lcm"]
 
-    # qap_fr = session.get('qap_fr')
     qap_fr_search = DB.search(DATA.type == "groth.computation.qap_fr")
-    if qap_fr_search == []: qap_fr = None 
+    if qap_fr_search == []: qap_fr = None
     else: qap_fr = qap_fr_search[0]["qap_fr"]
-    
-    # fr_modulus = session.get('fr_modulus')
+
     fr_modulus_search = DB.search(DATA.type == "groth.computation.fr_modulus")
-    if fr_modulus_search == []: fr_modulus = None 
+    if fr_modulus_search == []: fr_modulus = None
     else: fr_modulus = fr_modulus_search[0]["fr_modulus"]
-    
+
     if user_code == None:
         user_code = DEFAULT_CODE
-    
-    return render_template('groth16/computation.html', \
-                           code=user_code, \
-                           ast_obj=ast_obj, \
-                           flatcode=flatcode, \
-                           variables=variables, \
-                           abc=abc, \
-                           inputs=inputs, \
-                           user_inputs=user_inputs, \
-                           r_vector=r_values, \
-                           qap=qap, \
-                           qap_lcm=qap_lcm, \
-                           qap_fr=qap_fr, \
-                           fr_modulus=fr_modulus \
-                           )
-    
+
+    return render_template('groth16/computation.html',
+                           code=user_code,
+                           ast_obj=ast_obj,
+                           flatcode=flatcode,
+                           variables=variables,
+                           abc=abc,
+                           inputs=inputs,
+                           user_inputs=user_inputs,
+                           r_vector=r_values,
+                           qap=qap,
+                           qap_lcm=qap_lcm,
+                           qap_fr=qap_fr,
+                           fr_modulus=fr_modulus)
+
 @app.route("/code", methods=['POST'])
 def save_code():
+    """사용자가 입력한 코드를 DB에 저장한다.
+
+    Input:
+        request.form['z-code'] (str): 사용자가 입력한 Python 코드 문자열.
+
+    Returns:
+        redirect: 메인 페이지('main')로 리다이렉트.
+    """
     if request.method == "POST":
-        session.clear() #clear session before save
+        session.clear()
         user_code = request.form['z-code']
         DB.upsert({"type":"groth.computation.code", "code":user_code}, DATA.type == "groth.computation.code")
         session["code"] = user_code
-        # return render_template('computation.html', code=session["code"])
         return redirect(url_for('main'))
-    
+
 @app.route("/code/delete", methods=["POST"])
 def delete_code():
+    """저장된 코드와 전체 DB 데이터를 삭제한다.
+
+    Input:
+        없음 (POST 요청만 필요).
+
+    Returns:
+        redirect: 메인 페이지('main')로 리다이렉트.
+
+    Side Effects:
+        session 초기화, DB 전체 truncate.
+    """
     if request.method == "POST":
         session.clear()
         DB.truncate()
@@ -225,12 +250,23 @@ def delete_code():
 
 @app.route("/code/ast", methods=["POST"])
 def ast_table():
+    """저장된 코드를 AST로 파싱하여 함수명, 입력, 본문 구조를 DB에 저장한다.
+
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드.
+
+    Returns:
+        redirect: 메인 페이지('main')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.computation.ast_obj 저장 ({"name": 함수명, "inputs": 입력 목록, "body": 본문 딕셔너리 리스트}).
+    """
     if request.method == "POST":
 
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
-        
+
         if user_code:
             func_name = parse(user_code)[0].name
             inputs, body = extract_inputs_and_body(parse(user_code))
@@ -239,120 +275,150 @@ def ast_table():
             for ast_obj in body:
                 obj = make_target_dict(ast_obj)
                 out.append(obj)
-            
+
             final_out["name"] = func_name
             final_out["inputs"] = inputs
             final_out["body"] = out
 
-            #save ast object
             session['ast_obj'] = final_out
             DB.upsert({"type":"groth.computation.ast_obj", "ast_obj":final_out}, DATA.type == "groth.computation.ast_obj")
-            # flatcode = flatten_body(body)
-            # print(flatcode)
-            # #[['*', 'sym_1', 'x', 'x'], 
-            # # ['*', 'y', 'sym_1', 'x'], 
-            # # ['+', 'sym_2', 'y', 'x'], 
-            # # ['+', '~out', 'sym_2', 5]]
             return redirect(url_for('main'))
         else:
             return redirect(url_for('main'))
 
 def clear_flatcode():
-    # session['flatcode'] = None
+    """DB에서 flatcode와 variables 데이터를 삭제한다.
+
+    Input:
+        없음.
+
+    Returns:
+        없음.
+
+    Side Effects:
+        DB에서 groth.computation.flatcode, groth.computation.variables 제거.
+    """
     DB.remove(DATA.type == "groth.computation.flatcode")
-    # session['variables'] = None
     DB.remove(DATA.type == "groth.computation.variables")
-        
+
 @app.route("/flatcode/table", methods=["POST"])
 def flatcode_table():
+    """코드를 flatten하여 flatcode와 변수 배치를 DB에 저장한다.
+
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드.
+
+    Returns:
+        redirect: 메인 페이지('main')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.computation.flatcode (list[tuple]), groth.computation.variables (list[str]) 저장.
+    """
     if request.method == "POST":
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
-        
+
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
 
             variables = get_var_placement(inputs, flatcode)
-            
+
             initialize_symbol()
-            
-            # session['flatcode'] = flatcode
+
             DB.upsert({"type":"groth.computation.flatcode", "flatcode":flatcode}, DATA.type == "groth.computation.flatcode")
-            # session['variables'] = variables
             DB.upsert({"type":"groth.computation.variables", "variables":variables}, DATA.type == "groth.computation.variables")
             return redirect(url_for('main'))
         else:
             return redirect(url_for('main'))
-        
+
 @app.route("/r1cs/abc", methods=["POST"])
 def abc_matrix():
+    """Flatcode로부터 R1CS의 A, B, C 행렬을 생성하여 DB에 저장한다.
+
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드.
+
+    Returns:
+        redirect: 메인 페이지('main')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.computation.abc 저장 ({"A": list, "B": list, "C": list}).
+    """
     if request.method == "POST":
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
-        
+
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
             A, B, C = flatcode_to_r1cs(inputs, flatcode)
             initialize_symbol()
-            # session["abc"] = {"A": A, "B": B, "C": C}
             DB.upsert({"type":"groth.computation.abc", "abc":{"A": A, "B": B, "C": C}}, DATA.type == "groth.computation.abc")
 
             return redirect(url_for('main'))
         else:
             return redirect(url_for('main'))
-        
-# @app.route("/r1cs/inputs", methods=["POST"])
-# def retrieve_values():
-#     if request.method == "POST":
-#         user_code = session.get("code")
-#         if user_code: 
-#             return redirect(url_for('main'))
-#         else:
-#             return redirect(url_for('main'))
-        
+
 @app.route("/r1cs/inputs", methods=["POST"])
 def retrieve_values():
+    """코드에서 입력 변수 목록을 추출하여 DB에 저장한다.
+
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드.
+
+    Returns:
+        redirect: 메인 페이지('main')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.computation.inputs 저장 (list[str]: 입력 변수명 리스트).
+    """
     if request.method == "POST":
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
 
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
-            # session['inputs'] = inputs
             DB.upsert({"type":"groth.computation.inputs", "inputs":inputs}, DATA.type == "groth.computation.inputs")
             return redirect(url_for('main'))
         else:
             return redirect(url_for('main'))
-        
+
 @app.route("/r1cs/inputs/r", methods=["POST"])
 def calculate_r():
+    """사용자 입력값으로 witness 벡터 r을 계산하여 DB에 저장한다.
+
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드.
+        request.form (dict): 각 입력 변수에 대한 정수 값 (예: {"x": "3"}).
+
+    Returns:
+        redirect: 메인 페이지('main')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.computation.user_inputs (dict), groth.computation.r_values (list[int]: witness 벡터) 저장.
+    """
     if request.method == "POST":
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
-        
+
         if user_code:
             form_data = request.form
             user_inputs = []
             for d in form_data:
                 user_inputs.append(int(form_data[d]))
-            # print(user_inputs)
-            # session['user_inputs'] = form_data
             DB.upsert({"type":"groth.computation.user_inputs", "user_inputs":form_data}, DATA.type == "groth.computation.user_inputs")
-            
-            # todo : calculate r vector
+
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
 
             r = assign_variables(inputs, user_inputs, flatcode)
-            
+
             initialize_symbol()
-            # session['r_values'] = r
             DB.upsert({"type":"groth.computation.r_values", "r_values":r}, DATA.type == "groth.computation.r_values")
 
             return redirect(url_for('main'))
@@ -361,12 +427,23 @@ def calculate_r():
 
 @app.route("/qap/normal", methods=["POST"])
 def create_qap():
+    """R1CS를 일반 QAP(라그랑주 보간)로 변환하여 DB에 저장한다.
+
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드.
+
+    Returns:
+        redirect: 메인 페이지('main')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.computation.qap 저장 ({"Ap": list, "Bp": list, "Cp": list, "Z": list}).
+    """
     if request.method == "POST":
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
-        
-        if user_code: 
+
+        if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
             A, B, C = flatcode_to_r1cs(inputs, flatcode)
@@ -374,7 +451,6 @@ def create_qap():
             Ap, Bp, Cp, Z = r1cs_to_qap(A, B, C)
             initialize_symbol()
 
-            # session["qap"] = {"Ap" : Ap, "Bp":Bp, "Cp": Cp, "Z":Z}
             DB.upsert({"type":"groth.computation.qap", "qap":{"Ap" : Ap, "Bp":Bp, "Cp": Cp, "Z":Z}}, DATA.type == "groth.computation.qap")
 
             return redirect(url_for('main'))
@@ -383,12 +459,23 @@ def create_qap():
 
 @app.route("/qap/lcm", methods=["POST"])
 def create_qap_lcm():
+    """R1CS를 LCM(행렬식) 변형 QAP로 변환하여 DB에 저장한다.
+
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드.
+
+    Returns:
+        redirect: 메인 페이지('main')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.computation.qap_lcm 저장 ({"Ap": list, "Bp": list, "Cp": list, "Z": list}).
+    """
     if request.method == "POST":
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
-        
-        if user_code: 
+
+        if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
             A, B, C = flatcode_to_r1cs(inputs, flatcode)
@@ -402,19 +489,32 @@ def create_qap_lcm():
             return redirect(url_for('main'))
         else:
             return redirect(url_for('main'))
-        
+
 
 @app.route("/qap/fr", methods=["POST"])
 def create_qap_fr():
+    """QAP 다항식을 FR(BN128 curve order) 필드로 변환하여 DB에 저장한다.
+
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드.
+        DB['groth.computation.r_values'] (list[int]): witness 벡터.
+
+    Returns:
+        redirect: 메인 페이지('main')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.computation.qap_fr ({"Ax": list, "Bx": list, "Cx": list, "Zx": list, "Rx": list})
+        및 groth.computation.fr_modulus (int: BN128 curve order) 저장.
+    """
     if request.method == "POST":
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
-        
+
         r_values_search = DB.search(DATA.type == "groth.computation.r_values")
-        if r_values_search == []: r_values = None 
+        if r_values_search == []: r_values = None
         else: r_values = r_values_search[0]["r_values"]
-        
+
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
@@ -430,79 +530,95 @@ def create_qap_fr():
             Rx = [ int(FR(int(num))) for num in r_values ]
 
             o = {"Ax" : Ax, "Bx": Bx, "Cx": Cx, "Zx": Zx, "Rx": Rx}
-            # session["qap_fr"] = o
             DB.upsert({"type":"groth.computation.qap_fr", "qap_fr":o}, DATA.type == "groth.computation.qap_fr")
             fr_modulus = int(FR.field_modulus)
-            # session["fr_modulus"]= fr_modulus
             DB.upsert({"type":"groth.computation.fr_modulus", "fr_modulus":fr_modulus}, DATA.type == "groth.computation.fr_modulus")
 
             return redirect(url_for('main'))
         else:
             return redirect(url_for('main'))
-        
+
 
 @app.route("/groth/setup")
 def main_setup():
-    # toxic = session.get("toxic")
+    """Setup 페이지. DB에서 toxic waste, 다항식, sigma 등의 데이터를 조회하여 렌더링한다.
+
+    Input:
+        DB에서 groth.setup.* 타입의 데이터를 조회 (toxic, polys, polys_x_val,
+        numWires, numGates, g1, g2, sigmas, gates, public_gates).
+
+    Returns:
+        렌더링된 groth16/setup.html 템플릿 (각 데이터를 템플릿 변수로 전달).
+    """
     toxic_search = DB.search(DATA.type == "groth.setup.toxic")
-    if toxic_search == []: toxic = None 
+    if toxic_search == []: toxic = None
     else: toxic = toxic_search[0]["toxic"]
-    # polys = session.get("polys")
+
     polys_search = DB.search(DATA.type == "groth.setup.polys")
-    if polys_search == []: polys = None 
+    if polys_search == []: polys = None
     else: polys = polys_search[0]["polys"]
-    # polys_x_val = session.get("polys_x_val")
+
     polys_x_val_search = DB.search(DATA.type == "groth.setup.polys_x_val")
-    if polys_x_val_search == []: polys_x_val = None 
+    if polys_x_val_search == []: polys_x_val = None
     else: polys_x_val = polys_x_val_search[0]["polys_x_val"]
 
-    # numWires = session.get("numWires")
     numWires_search = DB.search(DATA.type == "groth.setup.numWires")
-    if numWires_search == []: numWires = None 
+    if numWires_search == []: numWires = None
     else: numWires = numWires_search[0]["numWires"]
-    # numGates = session.get("numGates")
+
     numGates_search = DB.search(DATA.type == "groth.setup.numGates")
-    if numGates_search == []: numGates = None 
+    if numGates_search == []: numGates = None
     else: numGates = numGates_search[0]["numGates"]
-    # g1 = session.get("g1")
+
     g1_search = DB.search(DATA.type == "groth.setup.g1")
-    if g1_search == []: g1 = None 
+    if g1_search == []: g1 = None
     else: g1 = g1_search[0]["g1"]
-    # g2 = session.get("g2")
+
     g2_search = DB.search(DATA.type == "groth.setup.g2")
-    if g2_search == []: g2 = None 
+    if g2_search == []: g2 = None
     else: g2 = g2_search[0]["g2"]
 
-    # sigmas = session.get("sigmas")
     sigmas_search = DB.search(DATA.type == "groth.setup.sigmas")
-    if sigmas_search == []: sigmas = None 
+    if sigmas_search == []: sigmas = None
     else: sigmas = sigmas_search[0]["sigmas"]
-    
-    # gates = session.get("gates")
+
     gates_search = DB.search(DATA.type == "groth.setup.gates")
-    if gates_search == []: gates = None 
+    if gates_search == []: gates = None
     else: gates = gates_search[0]["gates"]
 
-    # public_gates = session.get("public_gates")
     public_gates_search = DB.search(DATA.type == "groth.setup.public_gates")
-    if public_gates_search == []: public_gates = None 
+    if public_gates_search == []: public_gates = None
     else: public_gates = public_gates_search[0]["public_gates"]
-    
-    return render_template("groth16/setup.html", \
-                           toxic = toxic, \
-                           polys = polys, \
-                           polys_x_val = polys_x_val, \
-                           numWires = numWires, \
-                           numGates = numGates, \
-                           g1 = g1, \
-                           g2 = g2, \
-                           sigmas = sigmas, \
-                           gates = gates, \
-                           public_gates = public_gates \
-                           )
+
+    return render_template("groth16/setup.html",
+                           toxic=toxic,
+                           polys=polys,
+                           polys_x_val=polys_x_val,
+                           numWires=numWires,
+                           numGates=numGates,
+                           g1=g1,
+                           g2=g2,
+                           sigmas=sigmas,
+                           gates=gates,
+                           public_gates=public_gates)
 
 @app.route("/groth/setup/toxic/save", methods=["POST"])
 def setup_save_toxic():
+    """Trusted setup의 toxic waste 파라미터(alpha, beta, delta, gamma, x_val)를 DB에 저장한다.
+
+    Input:
+        request.form['toxic-alpha'] (str): alpha 값.
+        request.form['toxic-beta'] (str): beta 값.
+        request.form['toxic-delta'] (str): delta 값.
+        request.form['toxic-gamma'] (str): gamma 값.
+        request.form['toxic-x-val'] (str): 다항식 평가점 x 값.
+
+    Returns:
+        redirect: setup 페이지('main_setup')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.setup.toxic 저장 ({"alpha", "beta", "delta", "gamma", "x_val"}).
+    """
     if request.method == "POST":
         toxic_alpha = request.form['toxic-alpha']
         toxic_beta = request.form['toxic-beta']
@@ -511,107 +627,136 @@ def setup_save_toxic():
         toxic_x_val = request.form['toxic-x-val']
 
         o = {"alpha":toxic_alpha, "beta" : toxic_beta, "delta" : toxic_delta, "gamma" : toxic_gamma, "x_val": toxic_x_val}
-        # session["toxic"] = o
         DB.upsert({"type":"groth.setup.toxic", "toxic":o}, DATA.type == "groth.setup.toxic")
         return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
-    
+
 @app.route("/groth/setup/toxic/clear", methods=["POST"])
 def clear_toxic():
+    """Toxic waste 및 관련 setup 데이터(다항식, sigma, gates 등)를 모두 삭제한다.
+
+    Input:
+        없음 (POST 요청만 필요).
+
+    Returns:
+        redirect: setup 페이지('main_setup')로 리다이렉트.
+
+    Side Effects:
+        DB에서 groth.setup.toxic, polys, polys_x_val, numWires, numGates, g1, g2, gates, public_gates, sigmas 제거.
+    """
     if request.method == "POST":
-        # session["toxic"] = None
         DB.remove(DATA.type == "groth.setup.toxic")
-        # session["polys"] = None
         DB.remove(DATA.type == "groth.setup.polys")
-        # session["polys_x_val"] = None
         DB.remove(DATA.type == "groth.setup.polys_x_val")
-
-        # session["numWires"] = None
         DB.remove(DATA.type == "groth.setup.numWires")
-        # session["numGates"] = None
         DB.remove(DATA.type == "groth.setup.numGates")
-        # session["g1"] = None
         DB.remove(DATA.type == "groth.setup.g1")
-        # session["g2"] = None
         DB.remove(DATA.type == "groth.setup.g2")
-
-
-        # session["gates"] = None
         DB.remove(DATA.type == "groth.setup.gates")
-        # session["public_gates"] = None
         DB.remove(DATA.type == "groth.setup.public_gates")
-        # session["sigmas"] = None
         DB.remove(DATA.type == "groth.setup.sigmas")
         return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
-    
+
 @app.route("/groth/setup/gates", methods=["POST"])
 def load_gates():
+    """코드에서 변수 배치(gates)를 추출하여 DB에 저장한다.
+
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드.
+
+    Returns:
+        redirect: setup 페이지('main_setup')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.setup.gates 저장 (list[str]: 변수명 배치 순서, 예: ['~one', 'x', '~out', ...]).
+    """
     if request.method == "POST":
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
-        
+
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
             variables = get_var_placement(inputs, flatcode)
             initialize_symbol()
-            # session["gates"] = variables
             DB.upsert({"type":"groth.setup.gates", "gates":variables}, DATA.type == "groth.setup.gates")
             return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
-    
+
 @app.route("/groth/setup/gates/set", methods=["POST"])
 def set_public_gates():
+    """사용자가 선택한 공개(public) 게이트 인덱스를 DB에 저장한다.
+
+    Input:
+        DB['groth.setup.gates'] (list[str]): 변수 배치 목록.
+        request.form['form-check-input-{i}'] (str | None): 체크된 게이트의 폼 값 (0번은 항상 포함).
+
+    Returns:
+        redirect: setup 페이지('main_setup')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.setup.public_gates 저장 (list[int]: 공개 게이트 인덱스, 예: [0, 1]).
+    """
     if request.method == "POST":
-        # gates = session.get("gates")
         gates_search = DB.search(DATA.type == "groth.setup.gates")
-        if gates_search == []: gates = None 
+        if gates_search == []: gates = None
         else: gates = gates_search[0]["gates"]
-        # print(gates)
+
         if gates:
-            # print("gates in")
             target = [0]
             for i in range(len(gates)-1):
                 check = request.form.get("form-check-input-"+str(i+1))
                 if check != None:
                     target.append(i+1)
-            # session["public_gates"] = target
             DB.upsert({"type":"groth.setup.public_gates", "public_gates":target}, DATA.type == "groth.setup.public_gates")
-            # print(target)
             return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
-    
+
 @app.route("/groth/setup/gates/reset", methods=["POST"])
 def reset_public_gates():
+    """공개 게이트 설정과 sigma를 초기화한다.
+
+    Input:
+        없음 (POST 요청만 필요).
+
+    Returns:
+        redirect: setup 페이지('main_setup')로 리다이렉트.
+
+    Side Effects:
+        DB에서 groth.setup.public_gates, groth.setup.sigmas 제거.
+    """
     if request.method == "POST":
-        # session["public_gates"] = None
         DB.remove(DATA.type == "groth.setup.public_gates")
-        # session["sigmas"] = None #sigmas also have to be recalculated
         DB.remove(DATA.type == "groth.setup.sigmas")
         return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
-    
-# @app.route("/groth/setup/polys", methods=["POST"])
-# def clear_toxic():
-#     if request.method == "POST":
-#         return redirect(url_for('main_setup'))
-#     else:
-#         return redirect(url_for('main_setup'))
-    
+
 @app.route("/groth/setup/polys", methods=["POST"])
 def get_polys():
+    """R1CS에서 QAP(LCM) 다항식을 생성하고 FR 필드로 변환하여 DB에 저장한다.
+
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드.
+
+    Returns:
+        redirect: setup 페이지('main_setup')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.setup.polys 저장 ({"Ap": list[list[int]], "Bp": list[list[int]],
+        "Cp": list[list[int]], "Zp": list[int]} — FR 필드 값).
+    """
     if request.method == "POST":
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
-        
+
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
@@ -623,32 +768,39 @@ def get_polys():
             Bx = [ [int(FR(int(n))) for n in vec] for vec in Bp ]
             Cx = [ [int(FR(int(n))) for n in vec] for vec in Cp ]
             Zx = [ int(FR(int(num))) for num in Z ]
-            # print(Ax)
 
             o = {"Ap": Ax, "Bp": Bx, "Cp":Cx, "Zp":Zx}
-            # session["polys"] = o
             DB.upsert({"type":"groth.setup.polys", "polys":o}, DATA.type == "groth.setup.polys")
             return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
-    
+
 @app.route("/groth/setup/polys/evaluated", methods=["POST"])
 def get_polys_evaluated():
+    """QAP 다항식을 toxic x_val에서 평가한 값을 DB에 저장한다.
+
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드.
+        DB['groth.setup.toxic'] (dict): toxic waste 파라미터 (x_val 사용).
+
+    Returns:
+        redirect: setup 페이지('main_setup')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.setup.polys_x_val 저장 ({"Ax_val": list[int], "Bx_val": list[int],
+        "Cx_val": list[int], "Zx_val": int} — x_val에서 평가된 다항식 값).
+    """
     if request.method == "POST":
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
-        
-        # toxic = session.get("toxic")
+
         toxic_search = DB.search(DATA.type == "groth.setup.toxic")
-        if toxic_search == []: toxic = None 
+        if toxic_search == []: toxic = None
         else: toxic = toxic_search[0]["toxic"]
-        
+
         if user_code:
-
             x_val = FR(int(toxic["x_val"]))
-
-            # print("x_val?? : {}".format(x_val))
 
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
@@ -671,10 +823,7 @@ def get_polys_evaluated():
             Cx_val_int = [ int(num) for num in Cx_val ]
             Zx_val_int = int(Zx_val)
 
-            # print("Ax_Val : {}".format(type(Ax_val[0])))
-
             o = {"Ax_val": Ax_val_int, "Bx_val": Bx_val_int, "Cx_val":Cx_val_int, "Zx_val":Zx_val_int}
-            # session["polys_x_val"] = o
             DB.upsert({"type":"groth.setup.polys_x_val", "polys_x_val":o}, DATA.type == "groth.setup.polys_x_val")
             return redirect(url_for('main_setup'))
     else:
@@ -682,22 +831,43 @@ def get_polys_evaluated():
 
 @app.route("/groth/setup/polys/clear", methods=["POST"])
 def clear_polys():
+    """다항식 및 평가값 데이터를 DB에서 삭제한다.
+
+    Input:
+        없음 (POST 요청만 필요).
+
+    Returns:
+        redirect: setup 페이지('main_setup')로 리다이렉트.
+
+    Side Effects:
+        DB에서 groth.setup.polys, groth.setup.polys_x_val 제거.
+    """
     if request.method == "POST":
-        # session["polys"] = None
         DB.remove(DATA.type == "groth.setup.polys")
-        # session["polys_x_val"] = None
         DB.remove(DATA.type == "groth.setup.polys_x_val")
         return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
-    
+
 @app.route("/groth/setup/sigma/formula", methods=["POST"])
 def sigma_formula():
+    """와이어/게이트 수와 G1, G2 생성자 정보를 계산하여 DB에 저장한다.
+
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드.
+
+    Returns:
+        redirect: setup 페이지('main_setup')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.setup.numWires (int), groth.setup.numGates (int),
+        groth.setup.g1 (list[int]: G1 좌표), groth.setup.g2 (list[list[int]]: G2 좌표) 저장.
+    """
     if request.method == "POST":
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
-        
+
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
@@ -707,8 +877,6 @@ def sigma_formula():
 
             numWires = getNumWires(Ap)
             numGates = getNumGates(Ap)
-            # session["numWires"] = numWires
-            # session["numGates"] = numGates
             DB.upsert({"type":"groth.setup.numWires", "numWires":numWires}, DATA.type == "groth.setup.numWires")
             DB.upsert({"type":"groth.setup.numGates", "numGates":numGates}, DATA.type == "groth.setup.numGates")
 
@@ -717,45 +885,47 @@ def sigma_formula():
             g2_1 = [int(G2[1].coeffs[0]), int(G2[1].coeffs[0])]
             g2_int = [g2_0, g2_1]
 
-            # session["g1"] = g1_int
-            # session["g2"] = g2_int
             DB.upsert({"type":"groth.setup.g1", "g1":g1_int}, DATA.type == "groth.setup.g1")
             DB.upsert({"type":"groth.setup.g2", "g2":g2_int}, DATA.type == "groth.setup.g2")
-
-            # print("Wires and Gates : {}, {}".format(numWires, numGates))
-            # print("G1 : {}".format(G1))
-            # print("type(G1[0]) : {}".format(type(G1[0])))
-            # print("G2 : {}".format(G2))
-
-            # print("g1 int {}".format(g1_int))
-            # print("g2 int {}".format(g2_int))
-
 
             return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
-    
+
 @app.route("/groth/setup/sigma/calc", methods=["POST"])
 def calculate_sigmas():
+    """Toxic waste와 다항식 평가값으로 sigma1_1~sigma2_2를 계산하여 DB에 저장한다.
+
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드.
+        DB['groth.setup.toxic'] (dict): toxic waste 파라미터 (alpha, beta, delta, gamma, x_val).
+        DB['groth.setup.public_gates'] (list[int]): 공개 게이트 인덱스.
+
+    Returns:
+        redirect: setup 페이지('main_setup')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.setup.sigmas 저장 ({"1_1"~"1_5": list[list[int]] (G1 포인트),
+        "2_1", "2_2": list[list[list[int]]] (G2 포인트)}).
+    """
     if request.method == "POST":
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
 
-        # toxic = session.get("toxic")
         toxic_search = DB.search(DATA.type == "groth.setup.toxic")
-        if toxic_search == []: toxic = None 
-        else: toxic = toxic_search[0]["toxic"]    
-        
+        if toxic_search == []: toxic = None
+        else: toxic = toxic_search[0]["toxic"]
+
         public_gates_search = DB.search(DATA.type == "groth.setup.public_gates")
-        if public_gates_search == []: public_gates = None 
+        if public_gates_search == []: public_gates = None
         else: public_gates = public_gates_search[0]["public_gates"]
 
         if user_code:
-            
+
             if toxic == None:
                 return redirect(url_for('main_setup'))
-            
+
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
             A, B, C = flatcode_to_r1cs(inputs, flatcode)
@@ -766,10 +936,6 @@ def calculate_sigmas():
             Bx = getFRPoly2D(Bp)
             Cx = getFRPoly2D(Cp)
             Zx = getFRPoly1D(Z)
-            # print("Ax : {}".format(Ax))
-            # print("Bx : {}".format(Bx))
-            # print("Cx : {}".format(Cx))
-            # print("Zx : {}".format(Zx))
 
             numGates = getNumGates(Ax)
             numWires = getNumWires(Ax)
@@ -780,22 +946,10 @@ def calculate_sigmas():
             delta = FR(int(toxic["delta"]))
             gamma = FR(int(toxic["gamma"]))
 
-            print("x_val : {}".format(x_val))
-            print("alpha : {}".format(alpha))
-            print("beta : {}".format(beta))
-            print("delta : {}".format(delta))
-            print("gamma : {}".format(gamma))
-            
             Ax_val = ax_val(Ax, x_val)
             Bx_val = bx_val(Bx, x_val)
             Cx_val = cx_val(Cx, x_val)
             Zx_val = zx_val(Zx, x_val)
-
-            print("Ax_val : {}".format(Ax_val))
-            print("Bx_val : {}".format(Bx_val))
-            print("Cx_val : {}".format(Cx_val))
-            print("Zx_val : {}".format(Zx_val))
-            # print("Hx_val : {}".format(Hx_val))
 
             s11 = sigma11(alpha, beta, delta)
             s12 = sigma12(numGates, x_val)
@@ -805,25 +959,31 @@ def calculate_sigmas():
             s21 = sigma21(beta, delta, gamma)
             s22 = sigma22(numGates, x_val)
 
-            print("s11 : {}".format(s11))
-            print("s12 : {}".format(s12))
-            print("s13 : {}".format(s13))
-            print("s14 : {}".format(s14))
-            print("s15 : {}".format(s15))
-            print("s21 : {}".format(s21))
-            print("s22 : {}".format(s22))
-            print("VAL : {}".format(VAL))
-
             def turn_point_int(li):
+                """EC 포인트의 좌표를 정수 리스트로 변환한다.
+
+                Args:
+                    li (tuple[FQ, FQ]): G1 타원곡선 포인트 (FQ 좌표 튜플).
+
+                Returns:
+                    list[int]: 정수 좌표 리스트 [x, y].
+                """
                 return [int(num) for num in li]
-            
+
             def turn_g2_int(g2p):
-                o = []
+                """G2 포인트를 정수 리스트로 변환한다.
+
+                Args:
+                    g2p (tuple[FQ2, FQ2]): G2 타원곡선 포인트 (FQ2 좌표 튜플).
+
+                Returns:
+                    list[list[int]]: [[x_re, x_im], [y_re, y_im]] 형태의 정수 리스트.
+                """
                 g2p0 = [int(g2p[0].coeffs[0]), int(g2p[0].coeffs[1])]
                 g2p1 = [int(g2p[1].coeffs[0]), int(g2p[1].coeffs[1])]
                 g2_int = [g2p0, g2p1]
                 return g2_int
-            
+
             s11_int = [turn_point_int(point) for point in s11]
             s12_int = [turn_point_int(point) for point in s12]
             s13_int = [turn_point_int(point) for point in s13]
@@ -831,43 +991,31 @@ def calculate_sigmas():
             s15_int = [turn_point_int(point) for point in s15]
             s21_int = [turn_g2_int(point) for point in s21]
             s22_int = [turn_g2_int(point) for point in s22]
-            
-            # print("11 : {}".format(s11))
-            # print("12 : {}".format(s12))
-            # print("13 : {}".format(s13))
-            # print("14 : {}".format(s14))
-            # print("15 : {}".format(s15))
-            # print("21 : {}".format(s21))
-            # print("21 : {}".format(s22))
-
-            print("11_i : {}".format(s11_int))
-            print("12_i : {}".format(s12_int))
-            print("13_i : {}".format(s13_int))
-            print("14_i : {}".format(s14_int))
-            print("15_i : {}".format(s15_int))
-            print("21_i : {}".format(s21_int))
-            print("22_i : {}".format(s22_int))
 
             o = {"1_1":s11_int, "1_2":s12_int, "1_3":s13_int, "1_4":s14_int, "1_5":s15_int, "2_1":s21_int, "2_2":s22_int}
-            # session["sigmas"] = o
             DB.upsert({"type":"groth.setup.sigmas", "sigmas":o}, DATA.type == "groth.setup.sigmas")
-            # print(o)
             return redirect(url_for('main_setup'))
     else:
         return redirect(url_for('main_setup'))
-    
+
 @app.route("/groth/setup/sigma/clear", methods=["POST"])
 def clear_sigmas():
+    """와이어/게이트 수, G1/G2 생성자, sigma 데이터를 DB에서 삭제한다.
+
+    Input:
+        없음 (POST 요청만 필요).
+
+    Returns:
+        redirect: setup 페이지('main_setup')로 리다이렉트.
+
+    Side Effects:
+        DB에서 groth.setup.numWires, numGates, g1, g2, sigmas 제거.
+    """
     if request.method == "POST":
-        # session["numWires"] = None
-        # session["numGates"] = None
         DB.remove(DATA.type == "groth.setup.numWires")
         DB.remove(DATA.type == "groth.setup.numGates")
-        # session["g1"] = None
-        # session["g2"] = None
         DB.remove(DATA.type == "groth.setup.g1")
         DB.remove(DATA.type == "groth.setup.g2")
-        # session["sigmas"] = None
         DB.remove(DATA.type == "groth.setup.sigmas")
 
         return redirect(url_for('main_setup'))
@@ -878,126 +1026,153 @@ def clear_sigmas():
 
 @app.route("/groth/proving")
 def main_proving():
-    # p_random = session.get("prover_random")
+    """Proving 페이지. DB에서 prover 관련 데이터를 조회하여 렌더링한다.
+
+    Input:
+        DB에서 groth.proving.* 타입의 데이터를 조회 (prover_random, prover_input_form,
+        inputs, user_inputs, r_values) 및 groth.setup.public_gates.
+
+    Returns:
+        렌더링된 groth16/proving.html 템플릿 (각 데이터를 템플릿 변수로 전달).
+    """
     prover_random_search = DB.search(DATA.type == "groth.proving.prover_random")
-    if prover_random_search == []: p_random = None 
+    if prover_random_search == []: p_random = None
     else: p_random = prover_random_search[0]["prover_random"]
-    
-    # p_inputs_is_load = session.get("prover_input_form")
+
     prover_input_form_search = DB.search(DATA.type == "groth.proving.prover_input_form")
-    if prover_input_form_search == []: p_inputs_is_load = None 
+    if prover_input_form_search == []: p_inputs_is_load = None
     else: p_inputs_is_load = prover_input_form_search[0]["prover_input_form"]
 
-    # inputs = session.get("inputs")
     inputs_search = DB.search(DATA.type == "groth.proving.inputs")
-    if inputs_search == []: inputs = None 
+    if inputs_search == []: inputs = None
     else: inputs = inputs_search[0]["inputs"]
 
-    # user_inputs = session.get("user_inputs")
     user_inputs_search = DB.search(DATA.type == "groth.proving.user_inputs")
-    if user_inputs_search == []: user_inputs = None 
+    if user_inputs_search == []: user_inputs = None
     else: user_inputs = user_inputs_search[0]["user_inputs"]
 
-    # r_values = session.get("r_values")
     r_values_search = DB.search(DATA.type == "groth.proving.r_values")
-    if r_values_search == []: r_values = None 
+    if r_values_search == []: r_values = None
     else: r_values = r_values_search[0]["r_values"]
 
-    #values from previous stage(setup)
-    # public_gates = session.get("public_gates")
     public_gates_search = DB.search(DATA.type == "groth.setup.public_gates")
-    if public_gates_search == []: public_gates = None 
+    if public_gates_search == []: public_gates = None
     else: public_gates = public_gates_search[0]["public_gates"]
 
-    # proofs = session.get("proofs")
     proofs = DB.search(DATA.type == "groth.proving.proofs")
-    # print(proofs)
 
-    return render_template("groth16/proving.html", \
-                           p_random=p_random, \
-                           p_input_is_load=p_inputs_is_load, \
-                           inputs=inputs, \
-                           user_inputs=user_inputs, \
-                           r_values=r_values, \
-                           public_gates=public_gates, \
-                           proofs=proofs \
-                           )
-
-# @app.route("/groth/proving/random/save", methods=["POST"])
-# def save_prover_random():
-#     if request.method == "POST":
-#         user_code = session.get("code")
-#         if user_code:
-#             return redirect(url_for('main_proving'))
-#     else:
-#         return redirect(url_for('main_proving'))
+    return render_template("groth16/proving.html",
+                           p_random=p_random,
+                           p_input_is_load=p_inputs_is_load,
+                           inputs=inputs,
+                           user_inputs=user_inputs,
+                           r_values=r_values,
+                           public_gates=public_gates,
+                           proofs=proofs)
 
 @app.route("/groth/proving/random/save", methods=["POST"])
 def save_prover_random():
+    """Prover의 랜덤 값(r, s)을 DB에 저장한다.
+
+    Input:
+        request.form['prover-random-r'] (str): prover 랜덤 값 r.
+        request.form['prover-random-s'] (str): prover 랜덤 값 s.
+
+    Returns:
+        redirect: proving 페이지('main_proving')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.proving.prover_random 저장 ({"r": int, "s": int}).
+    """
     if request.method == "POST":
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
 
         if user_code:
             random_r = request.form['prover-random-r']
             random_s = request.form['prover-random-s']
             o = {"r" : int(random_r), "s" : int(random_s)}
-            # session["prover_random"] = o
             DB.upsert({"type":"groth.proving.prover_random", "prover_random":o}, DATA.type == "groth.proving.prover_random")
             return redirect(url_for('main_proving'))
     else:
         return redirect(url_for('main_proving'))
-    
+
 @app.route("/groth/proving/random/clear", methods=["POST"])
 def clear_prover_random():
+    """Prover 관련 데이터(랜덤 값, 입력, witness, proof)를 모두 삭제한다.
+
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드 (존재 확인용).
+
+    Returns:
+        redirect: proving 페이지('main_proving')로 리다이렉트.
+
+    Side Effects:
+        DB에서 groth.proving.prover_random, prover_input_form, inputs, user_inputs, r_values, proofs 제거.
+    """
     if request.method == "POST":
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
-        
+
         if user_code:
-            # session["prover_random"] = None
             DB.remove(DATA.type == "groth.proving.prover_random")
-            # session["prover_input_form"] = None
             DB.remove(DATA.type == "groth.proving.prover_input_form")
-            # session["inputs"] = None
             DB.remove(DATA.type == "groth.proving.inputs")
-            # session["user_inputs"] = None
             DB.remove(DATA.type == "groth.proving.user_inputs")
-            # session['r_values'] = None
             DB.remove(DATA.type == "groth.proving.r_values")
-            # session["proofs"] = None
             DB.remove(DATA.type == "groth.proving.proofs")
 
-            # print("prover random cleared")
             return redirect(url_for('main_proving'))
     else:
         return redirect(url_for('main_proving'))
-    
+
 @app.route("/groth/proving/inputs", methods=["POST"])
 def load_prover_input():
+    """코드에서 입력 변수를 추출하여 prover 입력 폼을 활성화한다.
+
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드.
+
+    Returns:
+        redirect: proving 페이지('main_proving')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.proving.prover_input_form (bool: True),
+        groth.proving.inputs (list[str]: 입력 변수명 리스트) 저장.
+    """
     if request.method == "POST":
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
 
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
-            # session["prover_input_form"] = True
             DB.upsert({"type":"groth.proving.prover_input_form", "prover_input_form":True}, DATA.type == "groth.proving.prover_input_form")
-
-            # session["inputs"] = inputs
             DB.upsert({"type":"groth.proving.inputs", "inputs":inputs}, DATA.type == "groth.proving.inputs")
             return redirect(url_for('main_proving'))
     else:
         return redirect(url_for('main_proving'))
-    
+
 @app.route("/groth/proving/witness/calc", methods=["POST"])
 def calculate_witness():
+    """사용자 입력값으로 witness 벡터 r을 계산하여 DB에 저장한다.
+
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드.
+        request.form (dict): 각 입력 변수에 대한 정수 값 (예: {"x": "3"}).
+
+    Returns:
+        redirect: proving 페이지('main_proving')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.proving.r_values (list[int]: witness 벡터),
+        groth.proving.user_inputs (dict: 사용자 입력 폼 데이터) 저장.
+    """
     if request.method == "POST":
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
 
         if user_code:
@@ -1006,59 +1181,63 @@ def calculate_witness():
             for d in form_data:
                 user_inputs.append(int(form_data[d]))
 
-            # todo : calculate r vector
             inputs, body = extract_inputs_and_body(parse(user_code))
             flatcode = flatten_body(body)
 
             r = assign_variables(inputs, user_inputs, flatcode)
             initialize_symbol()
 
-            # session['r_values'] = r
             DB.upsert({"type":"groth.proving.r_values", "r_values":r}, DATA.type == "groth.proving.r_values")
-            # session['user_inputs'] = form_data
             DB.upsert({"type":"groth.proving.user_inputs", "user_inputs":form_data}, DATA.type == "groth.proving.user_inputs")
             return redirect(url_for('main_proving'))
     else:
         return redirect(url_for('main_proving'))
-    
+
 @app.route("/groth/proving/proof/generate", methods=["POST"])
 def generate_proof():
-    if request.method == "POST":
-        #TODO : before call this function, check wehther below data exists
+    """Sigma, witness, 랜덤 값을 사용하여 Groth16 proof (A, B, C)를 생성하고 DB에 저장한다.
 
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드.
+        DB['groth.proving.user_inputs'] (dict): 사용자 입력 값.
+        DB['groth.setup.public_gates'] (list[int]): 공개 게이트 인덱스.
+        DB['groth.proving.prover_random'] (dict): prover 랜덤 값 {"r": int, "s": int}.
+        DB['groth.setup.sigmas'] (dict): sigma1_1~sigma2_2 EC 포인트.
+        DB['groth.setup.polys'] (dict): QAP 다항식 (FR 필드 정수 값).
+
+    Returns:
+        redirect: proving 페이지('main_proving')로 리다이렉트.
+
+    Side Effects:
+        DB에 groth.proving.proofs 저장 ({"proof_a": list[int] (G1), "proof_b": list[list[int]] (G2),
+        "proof_c": list[int] (G1)}).
+    """
+    if request.method == "POST":
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
 
-        # user_inputs = session.get("user_inputs")
         user_inputs_search = DB.search(DATA.type == "groth.proving.user_inputs")
-        if user_inputs_search == []: user_inputs = None 
+        if user_inputs_search == []: user_inputs = None
         else: user_inputs = user_inputs_search[0]["user_inputs"]
 
-        # public_gates = session.get("public_gates")
         public_gates_search = DB.search(DATA.type == "groth.setup.public_gates")
-        if public_gates_search == []: public_gates = None 
+        if public_gates_search == []: public_gates = None
         else: public_gates = public_gates_search[0]["public_gates"]
 
-        # prover_random = session.get("prover_random")
         prover_random_search = DB.search(DATA.type == "groth.proving.prover_random")
-        if prover_random_search == []: prover_random = None 
+        if prover_random_search == []: prover_random = None
         else: prover_random = prover_random_search[0]["prover_random"]
 
-        # print(public_gates)
-        # print(type(public_gates[0]))
         user_inputs_li = [int(user_inputs[i]) for i in user_inputs]
-        # print(user_inputs_li)
-        # sigmas = session.get("sigmas")
-        sigmas_search = DB.search(DATA.type == "groth.setup.sigmas")
-        if sigmas_search == []: sigmas = None 
-        else: sigmas = sigmas_search[0]["sigmas"]
-        
-        # polys = session.get("polys")
-        polys_search = DB.search(DATA.type == "groth.setup.polys")
-        if polys_search == []: polys = None 
-        else: polys = polys_search[0]["polys"]
 
+        sigmas_search = DB.search(DATA.type == "groth.setup.sigmas")
+        if sigmas_search == []: sigmas = None
+        else: sigmas = sigmas_search[0]["sigmas"]
+
+        polys_search = DB.search(DATA.type == "groth.setup.polys")
+        if polys_search == []: polys = None
+        else: polys = polys_search[0]["polys"]
 
         if user_code:
             inputs, body = extract_inputs_and_body(parse(user_code))
@@ -1069,7 +1248,7 @@ def generate_proof():
             r = prover_random["r"]
             s = prover_random["s"]
 
-            Ax = [ [FR(n) for n in vec] for vec in polys["Ap"] ]    
+            Ax = [ [FR(n) for n in vec] for vec in polys["Ap"] ]
             Bx = [ [FR(n) for n in vec] for vec in polys["Bp"] ]
             Cx = [ [FR(n) for n in vec] for vec in polys["Cp"] ]
             Zx = [ FR(num) for num in polys["Zp"] ]
@@ -1077,26 +1256,55 @@ def generate_proof():
 
             Hx, remain = hxr(Ax, Bx, Cx, Zx, Rx)
 
-            # print(Ax)
-
             def turn_g1_int(g1p):
+                """G1 포인트를 정수 리스트로 변환한다.
+
+                Args:
+                    g1p (tuple[FQ, FQ]): G1 타원곡선 포인트.
+
+                Returns:
+                    list[int]: [x, y] 정수 좌표 리스트.
+                """
                 return [int(num) for num in g1p]
-            
+
             def turn_g2_int(g2p):
-                o = []
+                """G2 포인트를 정수 리스트로 변환한다.
+
+                Args:
+                    g2p (tuple[FQ2, FQ2]): G2 타원곡선 포인트.
+
+                Returns:
+                    list[list[int]]: [[x_re, x_im], [y_re, y_im]] 정수 리스트.
+                """
                 g2p0 = [int(g2p[0].coeffs[0]), int(g2p[0].coeffs[1])]
                 g2p1 = [int(g2p[1].coeffs[0]), int(g2p[1].coeffs[1])]
                 g2_int = [g2p0, g2p1]
                 return g2_int
-            
+
             def turn_g2_fq2(g2p_int):
+                """정수 리스트를 FQ2 타입의 G2 포인트로 변환한다.
+
+                Args:
+                    g2p_int (list[list[int]]): [[re, im], [re, im]] 형태의 정수 리스트.
+
+                Returns:
+                    tuple[FQ2, FQ2]: FQ2 좌표 튜플의 G2 포인트.
+                """
                 g2p0 = bn128.FQ2(g2p_int[0])
                 g2p1 = bn128.FQ2(g2p_int[1])
                 return (g2p0, g2p1)
-            
+
             def turn_g1_fq(g1_int):
+                """정수 리스트를 FQ 타입의 G1 포인트로 변환한다.
+
+                Args:
+                    g1_int (list[int]): [x, y] 정수 좌표 리스트.
+
+                Returns:
+                    tuple[FQ, FQ]: FQ 좌표 튜플의 G1 포인트.
+                """
                 return (bn128.FQ(g1_int[0]), bn128.FQ(g1_int[1]))
-            
+
             sigma1_1 = [turn_g1_fq(point) for point in sigmas["1_1"]]
             sigma1_2 = [turn_g1_fq(point) for point in sigmas["1_2"]]
             sigma1_4 = [turn_g1_fq(point) for point in sigmas["1_4"]]
@@ -1104,83 +1312,102 @@ def generate_proof():
             sigma2_1 = [turn_g2_fq2(point) for point in sigmas["2_1"]]
             sigma2_2 = [turn_g2_fq2(point) for point in sigmas["2_2"]]
 
-            print("in generate_proof()")
-            print("sigma1_1 : {}".format(sigma1_1))
-            print("type(sigma1_1[0][0]) : {}".format(type(sigma1_1[0][0])))
-            print("sigma1_2 : {}".format(sigma1_2))
-            # print("sigma1_3 : {}".format(sigma1_3))
-            print("sigma1_4 : {}".format(sigma1_4))
-            print("sigma1_5 : {}".format(sigma1_5))
-            print("sigma2_1 : {}".format(sigma2_1)) #TODO : not right
-            print("sigma2_2 : {}".format(sigma2_2)) #TODO : not right
-
-            # print(sigma1_1)
-            # print(sigma2_2)
-            
             prf_a = proof_a(sigma1_1, sigma1_2, Ax, Rx, r)
             prf_b = proof_b(sigma2_1, sigma2_2, Bx, Rx, s)
             prf_c = proof_c(sigma1_1, sigma1_2, sigma1_4, sigma1_5, Bx, Rx, Hx, s, r, prf_a, public_gates)
 
-            # print(prf_a)
-            # print(prf_b)
-            # print(prf_c)
-
-            #TODO : should change way of storing data
             o = {"type": "groth.proving.proofs", "proof_a" : turn_g1_int(prf_a), "proof_b" : turn_g2_int(prf_b), "proof_c" : turn_g1_int(prf_c)}
             DB.upsert(o, DATA.type == "groth.proving.proofs")
-            # print(o)
             return redirect(url_for('main_proving'))
     else:
         return redirect(url_for('main_proving'))
-    
+
 #### VERIFYING ####
 
 @app.route("/groth/verifying")
 def main_verifying():
-    # public_gates_index = session.get("public_gates")
+    """Verifying 페이지. DB에서 proof와 공개 게이트 데이터를 조회하여 렌더링한다.
+
+    Input:
+        DB['groth.setup.public_gates'] (list[int]): 공개 게이트 인덱스.
+        DB['groth.proving.r_values'] (list[int]): witness 벡터.
+        DB['groth.proving.proofs'] (dict): proof_a, proof_b, proof_c.
+
+    Returns:
+        렌더링된 groth16/verifying.html 템플릿 (proofs, public_gates를 템플릿 변수로 전달).
+    """
     public_gates_search = DB.search(DATA.type == "groth.setup.public_gates")
-    if public_gates_search == []: public_gates_index = None 
+    if public_gates_search == []: public_gates_index = None
     else: public_gates_index = public_gates_search[0]["public_gates"]
 
-    # r_values = session.get("r_values")
     r_values_search = DB.search(DATA.type == "groth.proving.r_values")
-    if r_values_search == []: r_values = None 
+    if r_values_search == []: r_values = None
     else: r_values = r_values_search[0]["r_values"]
 
     proofs = DB.search(DATA.type == "groth.proving.proofs")
     public_gates = [r_values[i] for i in public_gates_index]
 
-    # print(public_gates)
-
     return render_template("groth16/verifying.html", proofs=proofs, public_gates=public_gates)
 
 @app.route("/groth/verifying/verify", methods=["POST"])
 def groth_verify():
+    """Proof A, B, C와 sigma를 사용하여 Groth16 페어링 검증을 수행한다.
+
+    Input:
+        DB['groth.computation.code'] (str): 저장된 사용자 코드.
+        DB['groth.setup.sigmas'] (dict): sigma1_1~sigma2_2 EC 포인트.
+        DB['groth.setup.public_gates'] (list[int]): 공개 게이트 인덱스.
+        DB['groth.proving.r_values'] (list[int]): witness 벡터.
+        DB['groth.proving.proofs'] (dict): proof_a (G1), proof_b (G2), proof_c (G1).
+
+    Returns:
+        redirect: verifying 페이지('main_verifying')로 리다이렉트.
+
+    Side Effects:
+        verify() 호출로 페어링 검증 수행 (결과: bool).
+    """
     if request.method == "POST":
 
         code_search = DB.search(DATA.type == "groth.computation.code")
-        if code_search == []: user_code = None 
+        if code_search == []: user_code = None
         else: user_code = code_search[0]["code"]
 
-        # sigmas = session.get("sigmas")
         sigmas_search = DB.search(DATA.type == "groth.setup.sigmas")
-        if sigmas_search == []: sigmas = None 
+        if sigmas_search == []: sigmas = None
         else: sigmas = sigmas_search[0]["sigmas"]
 
-        # public_gates_index = session.get("public_gates")
-        public_gates_search = DB.search(DATA.type == "groth.verifying.public_gates")
-        if public_gates_search == []: public_gates_index = None 
+        public_gates_search = DB.search(DATA.type == "groth.setup.public_gates")
+        if public_gates_search == []: public_gates_index = None
         else: public_gates_index = public_gates_search[0]["public_gates"]
 
-        r_values = session.get("r_values")
-        public_gates = [r_values[i] for i in public_gates_index]
+        r_values_search = DB.search(DATA.type == "groth.proving.r_values")
+        if r_values_search == []: r_values = None
+        else: r_values = r_values_search[0]["r_values"]
+        public_gates = [(i, r_values[i]) for i in public_gates_index]
+
         if user_code:
             def turn_g2_fq2(g2p_int):
+                """정수 리스트를 FQ2 타입의 G2 포인트로 변환한다.
+
+                Args:
+                    g2p_int (list[list[int]]): [[re, im], [re, im]] 형태의 정수 리스트.
+
+                Returns:
+                    tuple[FQ2, FQ2]: FQ2 좌표 튜플의 G2 포인트.
+                """
                 g2p0 = bn128.FQ2(g2p_int[0])
                 g2p1 = bn128.FQ2(g2p_int[1])
                 return (g2p0, g2p1)
-            
+
             def turn_g1_fq(g1_int):
+                """정수 리스트를 FQ 타입의 G1 포인트로 변환한다.
+
+                Args:
+                    g1_int (list[int]): [x, y] 정수 좌표 리스트.
+
+                Returns:
+                    tuple[FQ, FQ]: FQ 좌표 튜플의 G1 포인트.
+                """
                 return (bn128.FQ(g1_int[0]), bn128.FQ(g1_int[1]))
 
             proofs = DB.search(DATA.type == "groth.proving.proofs")
@@ -1192,7 +1419,7 @@ def groth_verify():
             proof_a = turn_g1_fq(proof_a_int)
             proof_b = turn_g2_fq2(proof_b_int)
             proof_c = turn_g1_fq(proof_c_int)
-            
+
             sigma1_1 = [turn_g1_fq(point) for point in sigmas["1_1"]]
             sigma1_2 = [turn_g1_fq(point) for point in sigmas["1_2"]]
             sigma1_3 = [turn_g1_fq(point) for point in sigmas["1_3"]]
@@ -1201,38 +1428,8 @@ def groth_verify():
             sigma2_1 = [turn_g2_fq2(point) for point in sigmas["2_1"]]
             sigma2_2 = [turn_g2_fq2(point) for point in sigmas["2_2"]]
 
-            print("proof_a : {}".format(proof_a))
-            print("proof_b : {}".format(proof_b))
-            print("proof_c : {}".format(proof_c))
-
-            print("sigma1_1 : {}".format(sigma1_1))
-            print("type(sigma1_1[0][0]) : {}".format(type(sigma1_1[0][0])))
-            print("sigma1_2 : {}".format(sigma1_2))
-            print("sigma1_3 : {}".format(sigma1_3))
-            print("sigma1_4 : {}".format(sigma1_4))
-            print("sigma1_5 : {}".format(sigma1_5))
-            print("sigma2_1 : {}".format(sigma2_1))
-            print("sigma2_2 : {}".format(sigma2_2))
-
-            print("public_gates : {}".format(public_gates))
-
-            lh = lhs(proof_a, proof_b)
-            print("lhs : {}".format(lh))
-            
             verify_result = verify(proof_a, proof_b, proof_c, sigma1_1, sigma1_3, sigma2_1, public_gates)
-            print(verify_result)
-            
+
             return redirect(url_for('main_verifying'))
     else:
         return redirect(url_for('main_verifying'))
-
-# @app.route("/groth/verifying/proofs", methods=["POST"])
-# def get_prover_proofs():
-#     if request.method == "POST":
-        
-#         if proofs != []: #if proof generated
-#             session["groth.verifying.proofs"] = True
-#             session["groth.verifying.public_r"] = True
-#             return redirect(url_for('main_proving'))
-#     else:
-#         return redirect(url_for('main_proving'))
